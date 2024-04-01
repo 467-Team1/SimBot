@@ -1,16 +1,16 @@
 # 467 Final Project - SimBot
 
-# Teleop Gesture:
+## Teleop Gesture:
 
 This repository contains code for teleoperation of Mbot using gestures. Follow the instructions below to set up and run the teleop_gesture program.
 
-## Prerequisites
+### Prerequisites
 
 - Mbot
 - Python 3
 - Terminal
 
-## Setup and Usage
+### Setup and Usage
 
 1. Reflash the `*.uf2` file into Mbot.
 
@@ -58,7 +58,7 @@ In Terminal 3:
 
 Ensure that the terminals are running in the background to maintain the teleoperation functionality.
 
-## Note
+### Note
 
 - Replace `teleop_gesture_v#.py` with the appropriate version of the Python script.
 - Make sure to follow the order of commands as mentioned above for proper execution.
