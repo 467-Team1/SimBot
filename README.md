@@ -25,9 +25,9 @@ In Terminal 1:
 
 In Terminal 2:
 - Navigate to the `teleop_gesture/shim_timesync_binaries/shim/` directory:
-    > $ cd teleop_gesture/shim_timesync_binaries/shim/
+      `cd teleop_gesture/shim_timesync_binaries/shim/`
 - Make the `shim` file executable:
-    > $ chmod +x ./shim
+      `chmod +x ./shim`
 - Write the following command, but do not run it yet:
     > $ ./shim
 
