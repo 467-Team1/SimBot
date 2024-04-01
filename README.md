@@ -18,24 +18,38 @@ This repository contains code for teleoperation of Mbot using gestures. Follow t
 
 In Terminal 1:
 - Navigate to the `teleop_gesture/python/` directory:
-    > $ cd teleop_gesture/python/
+  ```bash
+  cd teleop_gesture/python/
+    ```
 - Write the following command, but do not run it yet:
-    > $ python3 teleop_gesture_v#.py
-    (Replace # with the appropriate version number)
+  ```bash
+  python3 teleop_gesture_v#.py
+  ```
+  (Replace # with the appropriate version number)
 
 In Terminal 2:
 - Navigate to the `teleop_gesture/shim_timesync_binaries/shim/` directory:
-      `cd teleop_gesture/shim_timesync_binaries/shim/`
+  ```bash
+  cd teleop_gesture/shim_timesync_binaries/shim/
+  ```
 - Make the `shim` file executable:
-      `chmod +x ./shim`
+  ```bash
+  chmod +x ./shim
+  ```
 - Write the following command, but do not run it yet:
-    > $ ./shim
+  ```bash
+  ./shim
+  ```
 
 In Terminal 3:
 - Navigate to the `teleop_gesture/shim_timesync_binaries/timesync/` directory:
-    > $ cd teleop_gesture/shim_timesync_binaries/timesync/
+  ```bash
+  cd teleop_gesture/shim_timesync_binaries/timesync/
+  ```
 - Write the following command, but do not run it yet:
-    > $ ./timesync
+  ```bash
+  ./timesync
+  ```
 
 3. Run the commands in the following order:
     - Terminal 1
