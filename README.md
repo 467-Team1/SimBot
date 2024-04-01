@@ -1,1 +1,2 @@
-# design_project
+# 467 Final Project - SimBot
+
