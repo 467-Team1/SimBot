@@ -41,7 +41,7 @@ def main():
                     pygame.quit()
                     sys.exit()
             #############################
-            # pass
+            # pass -> Uncomment this line when you are ready to implement gestures
         except KeyboardInterrupt:
             print("Exiting...")
             sys.exit()
