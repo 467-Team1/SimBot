@@ -168,6 +168,14 @@ def main():
                     keypoint_classifier_labels[hand_sign_id],
                     point_history_classifier_labels[most_common_fg_id[0][0]],
                 )
+
+                # Write label to file (added code)
+                if hand_sign_id < 4:
+                    with open('left_hand_label.txt', 'w') as f:
+                        f.write(keypoint_classifier_labels[hand_sign_id])
+                else:
+                    with open('right_hand_label.txt', 'w') as f:
+                        f.write(keypoint_classifier_labels[hand_sign_id])
         else:
             point_history.append([0, 0])
 
