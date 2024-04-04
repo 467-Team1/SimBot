@@ -23,13 +23,14 @@ def main():
     time.sleep(0.5)
 
     # State Machine
-    current_state = State.STOP
-
-    # Parent State
-    parent_state = State.STOP
+    current_state = State.STABND_BY
 
     # Initialize the motor command
     cur_motor_command = mbot_motor_command_t()
+
+    # Open the gesture files
+    left_hand_file = open("../../hand-gesture-recognition/left_hand_labels.txt", "r")
+    right_hand_file = open("../../hand-gesture-recognition/right_hand_labels.txt", "r")
 
 
     while True:
@@ -48,40 +49,29 @@ def main():
             
         key_input = pygame.key.get_pressed() 
 
+        # Read the first line from the left hand & right hand files - used to change the state
+        left_hand_gesture = left_hand_file.readline().strip()
+        right_hand_gesture = right_hand_file.readline().strip()
+
         # State Machine
-        if key_input[pygame.K_UP]:
-            current_state = forward(cur_motor_command)
-            print("State: ", current_state)
-            parent_state = State.FORWARD
-
-        elif key_input[pygame.K_DOWN]:
-            current_state = backward(cur_motor_command)
-            print("State: ", current_state)
-            parent_state = State.BACKWARD
-
-        elif key_input[pygame.K_LEFT]:
-            current_state = left(cur_motor_command)
-            print("State: ", current_state)
-            parent_state = State.LEFT
-
-        elif key_input[pygame.K_RIGHT]:
-            current_state = right(cur_motor_command)
-            print("State: ", current_state)
-            parent_state = State.RIGHT
-
-        elif key_input[pygame.K_SPACE]:
-            current_state = stop(cur_motor_command, current_state)
+        if key_input[pygame.K_UP]: # if right_hand_gesture == "Forward":
+            current_state = forward(cur_motor_command, key_input) #left_hand_gesture)
             print("State: ", current_state)
 
-        elif key_input[pygame.K_w]:
-            print("State: Accelerate")
-            current_state = speed_up(cur_motor_command, current_state, parent_state)
+        elif key_input[pygame.K_DOWN]: # if right_hand_gesture == "Backwards":
+            current_state = backward(cur_motor_command, key_input) #left_hand_gesture)
+            print("State: ", current_state)
 
-        elif key_input[pygame.K_s]:
-            print("State: Decelerate")
-            current_state = slow_down(cur_motor_command, current_state, parent_state)
+        elif key_input[pygame.K_LEFT]: # if right_hand_gesture == "TurnLeft":
+            current_state = left(cur_motor_command, key_input) #left_hand_gesture)
+            print("State: ", current_state)
 
-        # Publish the motor command
+        elif key_input[pygame.K_RIGHT]: # if right_hand_gesture == "TurnRight":
+            current_state = right(cur_motor_command, key_input) #left_hand_gesture)
+            print("State: ", current_state)
+
+        # Publish the motor command - [might be worth having cur_motor_command published every single time it changes
+        # not sure if this will slow down computation, more than likely, for now just leave it here until further testing]
         lc.publish("MBOT_MOTOR_COMMAND", cur_motor_command.encode())
 
         # Sleep for 0.1 seconds
