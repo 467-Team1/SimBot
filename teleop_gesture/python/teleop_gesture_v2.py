@@ -29,8 +29,8 @@ def main():
     cur_motor_command = mbot_motor_command_t()
 
     # Open the gesture files
-    left_hand_file = open("../../hand-gesture-recognition-mediapipe-main/left_hand_labels.txt", "r")
-    right_hand_file = open("../../hand-gesture-recognition-mediapipe-main/right_hand_labels.txt", "r")
+    left_hand_file = open("../../hand-gesture-recognition-mediapipe-main/left_hand_label.txt", "r")
+    right_hand_file = open("../../hand-gesture-recognition-mediapipe-main/right_hand_label.txt", "r")
 
 
     while True:
