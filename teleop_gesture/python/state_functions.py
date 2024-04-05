@@ -7,7 +7,7 @@ class State(Enum):
     BACKWARD = 2
     LEFT = 3
     RIGHT = 4
-    STABND_BY = 5
+    STAND_BY = 5
 
 # Slow Down - decelerates to 0.05 m/s, 0.05 rad/s or -0.05 m/s, -0.05 rad/s
 def slow_down(cur_motor_command, current_state):

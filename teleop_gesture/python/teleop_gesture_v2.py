@@ -23,7 +23,7 @@ def main():
     time.sleep(0.5)
 
     # State Machine
-    current_state = State.STABND_BY
+    current_state = State.STAND_BY
 
     # Initialize the motor command
     cur_motor_command = mbot_motor_command_t()
