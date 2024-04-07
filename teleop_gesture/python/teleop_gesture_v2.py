@@ -8,8 +8,27 @@ import sys
 import os
 from enum import Enum
 from state_functions import *
+import socket
 
 def main():
+    #socket testing
+    # Create a UDP socket
+    receiver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    # Bind the socket to the address and port
+    receiver_address = ('localhost', 12345)
+    receiver_socket.bind(receiver_address)
+
+    print('Waiting for a message...')
+
+    try:
+        # Receive data from the sender
+        data, sender_address = receiver_socket.recvfrom(1024)
+        print('Received:', data.decode(), 'from', sender_address)
+
+    finally:
+        # Close the socket
+        receiver_socket.close()
 
     # LCM Object
     lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
