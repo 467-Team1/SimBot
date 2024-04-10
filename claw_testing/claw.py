@@ -16,15 +16,15 @@ GPIO.setwarnings(False)
 # Function: Calculates the duty cycle and sets the servo to that angle
 def SetAngle(angle):
 	# sets a variable equal to our angle divided by 18 and 2 added
-	duty = 1.5
+	duty = angle / 18 + 2
 	# turns on the pin for output
-	GPIO.output(3, True)
+	GPIO.output(11, True)
 	# changes the duty cycle to match what we calculated
 	pwm.ChangeDutyCycle(duty)
     # waits 1 second so the servo has time to make the turn
 	sleep(1)
 	# turns off the pin
-	GPIO.output(3, False)
+	GPIO.output(11, False)
 	# changes the duty back to 0 so we aren't continuously sending inputs to the servo
 	pwm.ChangeDutyCycle(0)
 
@@ -34,10 +34,10 @@ def SetAngle(angle):
 GPIO.setmode(GPIO.BOARD)
 
 # we need an output to send our PWM signal on
-GPIO.setup(3, GPIO.OUT)
+GPIO.setup(11, GPIO.OUT)
 
 # setup PWM on pin #3 at 50Hz
-pwm=GPIO.PWM(3, 50)
+pwm=GPIO.PWM(11, 50)
 
 # start it with 0 duty cycle so it doesn't set any angles on startup
 pwm.start(0)
