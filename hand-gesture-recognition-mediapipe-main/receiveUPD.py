@@ -25,8 +25,17 @@ try:
         data = client_socket.recv(1024).decode()
         print("Received data:", data)
 
-        # Process the received data (example: print it)
-        # Write label to file (added code)
+        # Process the received data: Create variables to split left and right hand
+        left_gesture = "Stop"
+        right_gesture = "Forward"
+        if data == "Continue" or data == "Stop" or data == "SpeedUp" or data == "SlowDown":
+            left_gesture = data
+        elif data == "Forward" or data == "Backwards" or data == "TurnRight" or data == "TurnLeft":
+            right_gesture = data
+        else:
+            None
+
+        # Process the received data: Write label to file
         # if data == "Continue" or data == "Stop" or data == "SpeedUp" or data == "SlowDown":
         #     with open('left_hand_label.txt', 'w') as f:
         #         f.write(data)

@@ -44,7 +44,7 @@ In Terminal 2:
 In Terminal 3:
 - Navigate to the `teleop_gesture/shim_timesync_binaries/timesync/` directory:
   ```bash
-  cd teleop_gesture/shim_timesync_binaries/timesync/
+  cd teleop_gesture/shim_timesync_binaries/
   ```
 - Write the following command, but do not run it yet:
   ```bash

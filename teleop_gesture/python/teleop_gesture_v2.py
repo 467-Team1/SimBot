@@ -11,24 +11,31 @@ from state_functions import *
 import socket
 
 def main():
-    #socket testing
-    # Create a UDP socket
-    receiver_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    # Bind the socket to the address and port
-    receiver_address = ('localhost', 12345)
-    receiver_socket.bind(receiver_address)
+    # Raspberry Pi IP address and port
+    server_ip = 'localhost'  # Listen on localhost
+    server_port = 12345  # Choose a port that is not already in use
 
-    print('Waiting for a message...')
+    # Create a TCP/IP socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    try:
-        # Receive data from the sender
-        data, sender_address = receiver_socket.recvfrom(1024)
-        print('Received:', data.decode(), 'from', sender_address)
+    # Bind the socket to the IP address and port
+    server_socket.bind((server_ip, server_port))
 
-    finally:
-        # Close the socket
-        receiver_socket.close()
+    # Listen for incoming connections
+    server_socket.listen(1)
+
+    print("Waiting for a connection...")
+
+    # Accept a connection
+    client_socket, client_address = server_socket.accept()
+
+    print("Connected to:", client_address)
+
+    left_gesture= "Stop"
+    right_gesture = "Forward"
+
+    # ------------------------------------------------------------
 
     # LCM Object
     lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
@@ -42,52 +49,85 @@ def main():
     time.sleep(0.5)
 
     # State Machine
-    current_state = State.STAND_BY
+    current_left_state = State.STAND_BY
+    current_right_state = State.STAND_BY 
 
     # Initialize the motor command
     cur_motor_command = mbot_motor_command_t()
-
-    # Open the gesture files
-    left_hand_file = open("../../hand-gesture-recognition-mediapipe-main/left_hand_label.txt", "r")
-    right_hand_file = open("../../hand-gesture-recognition-mediapipe-main/right_hand_label.txt", "r")
-
 
     while True:
         # Exit Condition if Ctrl+C is 
         try:
             # For Testing Purposes ONLY #
-            for event in pygame.event.get():
-                if event.type==pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+            # for event in pygame.event.get():
+            #     if event.type==pygame.QUIT:
+            #         pygame.quit()
+            #         sys.exit()
             #############################
             # pass -> Uncomment this line when you are ready to implement gestures
-        except KeyboardInterrupt:
-            print("Exiting...")
+            # Receive data from the client
+            data = client_socket.recv(1024).decode()
+            # print("Received data:", data)
+            if data == "Continue" or data == "Stop" or data == "SpeedUp" or data == "SlowDown":
+                left_gesture = data
+            elif data == "Forward" or data == "Backwards" or data == "TurnRight" or data == "TurnLeft":
+                right_gesture = data
+            else:
+                None
+            print("Left gesture: ", left_gesture)
+            print("Right gesture: ", right_gesture)
+
+        except:
+            print("Data not received...")
             sys.exit()
             
         key_input = pygame.key.get_pressed() 
 
-        # Read the first line from the left hand & right hand files - used to change the state
-        left_hand_gesture = left_hand_file.readline().strip()
-        right_hand_gesture = right_hand_file.readline().strip()
-
         # State Machine
-        if key_input[pygame.K_UP]: # if right_hand_gesture == "Forward":
-            current_state = forward(cur_motor_command, key_input) #left_hand_gesture)
-            print("State: ", current_state)
+        if left_gesture == "Stop":
+            # if current_left_state != "Stop":
+            #     previous_state = current_right_state
+            current_left_state = stop(lc, cur_motor_command, current_right_state)
+            # print("State: ", current_left_state)
 
-        elif key_input[pygame.K_DOWN]: # if right_hand_gesture == "Backwards":
-            current_state = backward(cur_motor_command, key_input) #left_hand_gesture)
-            print("State: ", current_state)
+        elif left_gesture == "Continue" or left_gesture  == "SpeedUp" or left_gesture == "SlowDown":
 
-        elif key_input[pygame.K_LEFT]: # if right_hand_gesture == "TurnLeft":
-            current_state = left(cur_motor_command, key_input) #left_hand_gesture)
-            print("State: ", current_state)
+            if right_gesture == "Forward": 
+                current_right_state = forward(cur_motor_command) #left_hand_gesture)
+                # print("State: ", current_right_state)
 
-        elif key_input[pygame.K_RIGHT]: # if right_hand_gesture == "TurnRight":
-            current_state = right(cur_motor_command, key_input) #left_hand_gesture)
-            print("State: ", current_state)
+            elif right_gesture == "Backwards":
+                current_right_state = backward(cur_motor_command) #left_hand_gesture)
+                # print("State: ", current_right_state)
+
+            elif right_gesture == "TurnLeft":
+                current_right_state = left(cur_motor_command) #left_hand_gesture)
+                # print("State: ", current_right_state)
+
+            elif right_gesture == "TurnRight":
+                current_right_state = right(cur_motor_command) #left_hand_gesture)
+                # print("State: ", current_right_state)
+        
+            if left_gesture == "SpeedUp":
+                current_left_state = speed_up(lc, cur_motor_command, current_right_state)
+                # print("State: ", current_left_state)
+
+            elif left_gesture == "SlowDown":
+                current_left_state = slow_down(lc, cur_motor_command, current_right_state)
+                # print("State: ", current_left_state)
+            
+            elif left_gesture == "Continue":
+                # current_right_state = previous_state
+                current_left_state = current_right_state
+                # print("Returning to previous state before stopping...")
+                print("State: continue")
+        
+        else:
+            current_left_state = State.STAND_BY
+            current_right_state = State.STAND_BY
+            print("Did not receive gesture... In STANDBY")
+        
+        print("Currently in main loop in state: ", current_left_state, " ", current_right_state)
 
         # Publish the motor command - [might be worth having cur_motor_command published every single time it changes
         # not sure if this will slow down computation, more than likely, for now just leave it here until further testing]
