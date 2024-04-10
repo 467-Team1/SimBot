@@ -16,7 +16,7 @@ GPIO.setwarnings(False)
 # Function: Calculates the duty cycle and sets the servo to that angle
 def SetAngle(angle):
 	# sets a variable equal to our angle divided by 18 and 2 added
-	duty = 2
+	duty = 1.5
 	# turns on the pin for output
 	GPIO.output(3, True)
 	# changes the duty cycle to match what we calculated
