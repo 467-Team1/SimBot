@@ -28,9 +28,9 @@ In Terminal 1:
   (Replace # with the appropriate version number)
 
 In Terminal 2:
-- Navigate to the `teleop_gesture/shim_timesync_binaries/shim/` directory:
+- Navigate to the `teleop_gesture/shim_timesync_binaries/` directory:
   ```bash
-  cd teleop_gesture/shim_timesync_binaries/shim/
+  cd teleop_gesture/shim_timesync_binaries/
   ```
 - Make the `shim` file executable:
   ```bash
@@ -42,7 +42,7 @@ In Terminal 2:
   ```
 
 In Terminal 3:
-- Navigate to the `teleop_gesture/shim_timesync_binaries/timesync/` directory:
+- Navigate to the `teleop_gesture/shim_timesync_binaries/` directory:
   ```bash
   cd teleop_gesture/shim_timesync_binaries/
   ```
@@ -62,3 +62,14 @@ Ensure that the terminals are running in the background to maintain the teleoper
 
 - Replace `teleop_gesture_v#.py` with the appropriate version of the Python script.
 - Make sure to follow the order of commands as mentioned above for proper execution.
+
+### Useful Commands
+## To allow UI's to show up on VNC Viewer
+```bash
+ssh -X pi@[insert IP Address here]
+```
+once in the Raspberry Pi, run this command:
+```bash
+export DISPLAY=:0.0
+```
+
