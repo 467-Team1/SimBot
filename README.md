@@ -63,8 +63,8 @@ Ensure that the terminals are running in the background to maintain the teleoper
 - Replace `teleop_gesture_v#.py` with the appropriate version of the Python script.
 - Make sure to follow the order of commands as mentioned above for proper execution.
 
-### Useful Commands
-## To allow UI's to show up on VNC Viewer
+## Useful Commands
+### To allow UI's to show up on VNC Viewer
 ```bash
 ssh -X pi@[insert IP Address here]
 ```
