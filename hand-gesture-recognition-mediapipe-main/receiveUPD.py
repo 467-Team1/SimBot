@@ -1,7 +1,8 @@
 import socket
 
 # Raspberry Pi IP address and port
-server_ip = 'localhost'  # Listen on localhost
+# server_ip = 'localhost'  # Listen on localhost (port forwarding)
+server_ip = '192.168.1.3'
 server_port = 12345  # Choose a port that is not already in use
 
 # Create a TCP/IP socket
