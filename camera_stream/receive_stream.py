@@ -58,7 +58,7 @@ def video():
     return Response(get_frames(), mimetype='multipart/x-mixed-replace;boundary=frame')
 
 def get_frames():
-    url = 'http://192.168.1.4:5000/video_feed'  
+    url = 'http://192.168.1.2:5000/video_feed'  
     response = requests.get(url, stream=True)
 
     frame_buffer = b''
@@ -106,4 +106,4 @@ def process_frame(frame):
     return buffer.tobytes()
 
 if __name__ == '__main__':
-    app2.run(host='192.168.1.2', port=5001, threaded=True)
+    app2.run(host='192.168.1.6', port=5001, threaded=True)
