@@ -4,6 +4,7 @@ from apriltag import Detector
 import cv2
 import numpy as np
 from threading import Lock
+import socket
 
 app2 = Flask(__name__)
 
@@ -106,4 +107,6 @@ def process_frame(frame):
     return buffer.tobytes()
 
 if __name__ == '__main__':
-    app2.run(host='192.168.1.6', port=5001, threaded=True)
+    hostname = socket.gethostname()
+    IP = socket.gethostbyname(hostname)
+    app2.run(host=IP, port=5001, threaded=True)
