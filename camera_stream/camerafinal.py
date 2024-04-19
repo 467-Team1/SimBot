@@ -25,4 +25,4 @@ def video_feed():
 if __name__ == '__main__':
     # hostname = socket.gethostname()
     # IP = socket.gethostbyname(hostname)
-    app1.run(host='192.168.1.3', port=5000, threaded=True)
+    app1.run(host='192.168.1.2', port=5000, threaded=True)

@@ -6,11 +6,9 @@ from lcmtypes import mbot_encoder_t
 import time
 import sys
 import os
-from enum import Enum
 from state_functions import *
 import socket
 from flask import Flask, request, jsonify
-
 
 def main():
 

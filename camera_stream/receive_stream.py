@@ -26,11 +26,14 @@ tag_height_meters = 0.05 # TODO: make sure to change for specific april tag
 def april_tag_click():
     with tags_lock:
         data = request.get_json()
+
+        # Check if the data is valid
         if not data:
             return jsonify({'error': 'Invalid data'}), 400
 
         x, y = data.get('x'), data.get('y')
 
+        # Check if the click is inside any of the detected tags
         for tag in detected_tags:
             if x >= tag['xMin'] and x <= tag['xMax'] and y >= tag['yMin'] and y <= tag['yMax']:
                 (cX, cY) = (int((tag['xMin'] + tag['xMax']) / 2), int((tag['yMin'] + tag['yMax']) / 2))
@@ -42,10 +45,11 @@ def april_tag_click():
                 print("[INFO] AprilTag center physical coordinates (x, y, z): ({:.2f}, {:.2f}, {:.2f})".format(
                     x_physical, y_physical, z_physical))
 
+                # Distance from camera to tag - NEEDED for cenering the robot
                 distance = -1 * (tag_height_meters * focal_length_y) / (tag['yMin'] - tag['yMax'])
 
+                # Print the distance to the HTML page
                 message_dist = ("[INFO] Distance to AprilTag: {:.2f} meters".format(distance))
-
                 return jsonify({'message': message_dist})
         
         return jsonify({'message': 'Clicked outside of all tags'})
