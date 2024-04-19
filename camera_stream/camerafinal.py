@@ -1,5 +1,5 @@
 import io
-# import picamera
+import picamera
 from flask import Flask, Response
 import socket
 import cv2
@@ -23,6 +23,6 @@ def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace;boundary=frame')
 
 if __name__ == '__main__':
-    hostname = socket.gethostname()
-    IP = socket.gethostbyname(hostname)
-    app1.run(host=IP, port=5000, threaded=True)
+    # hostname = socket.gethostname()
+    # IP = socket.gethostbyname(hostname)
+    app1.run(host='192.168.1.3', port=5000, threaded=True)

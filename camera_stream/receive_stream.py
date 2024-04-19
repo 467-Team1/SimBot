@@ -103,6 +103,47 @@ def process_frame(frame):
             }
             detected_tags.append(tag)
 
+    #-HSV stuff-----------------------------------------
+    nparr = np.frombuffer(frame, np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # Convert frame to HSV color space
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Define HSV color range for detection
+    lower_green = np.array([40, 100, 100])
+    upper_green = np.array([80, 255, 255])
+
+    # Create mask to isolate green color
+    mask = cv2.inRange(hsv_image, lower_green, upper_green)
+
+    # Find contours in the mask
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Process contours
+    for contour in contours:
+        # Filter contours based on criteria (e.g., area)
+        area = cv2.contourArea(contour)
+        if area > 100:
+            # Get bounding box of contour
+            x, y, w, h = cv2.boundingRect(contour)
+            # Draw bounding box on original frame
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            # Calculate tag center
+            cX = x + w // 2
+            cY = y + h // 2
+            # Append detected tag to the list
+            detected_tags.append({
+                'xMin': x,
+                'yMin': y,
+                'xMax': x + w,
+                'yMax': y + h,
+                'centerX': cX,
+                'centerY': cY
+            })
+    #-end of hsv stuff------------------------
+
     ret, buffer = cv2.imencode('.jpg', image)
     return buffer.tobytes()
 
