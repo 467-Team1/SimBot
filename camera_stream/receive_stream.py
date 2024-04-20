@@ -1,18 +1,25 @@
 from flask import Flask, Response, render_template, request, jsonify
 import requests
-from apriltag import Detector
+#from apriltag import Detector
+import apriltag
 import cv2
 import numpy as np
 from threading import Lock
-import socket
+import socket 
+import math
+
 
 app2 = Flask(__name__)
 
-detector = Detector()
+# detector = Detector()
+options = apriltag.DetectorOptions(families="tag36h11")
+detector = apriltag.Detector(options, searchpath=apriltag._get_dll_path())
+
 
 tags_lock = Lock()
 
 detected_tags = []
+tracking_tag = None
 
 
 focal_length_x = 547.7837  
@@ -21,36 +28,21 @@ principal_point_x = 303.9048
 principal_point_y = 243.7748
 
 tag_height_meters = 0.05 # TODO: make sure to change for specific april tag 
-
 @app2.route('/april_tag_click', methods=['POST'])
 def april_tag_click():
+    global tracking_tag
     with tags_lock:
         data = request.get_json()
-
-        # Check if the data is valid
         if not data:
             return jsonify({'error': 'Invalid data'}), 400
 
         x, y = data.get('x'), data.get('y')
 
-        # Check if the click is inside any of the detected tags
         for tag in detected_tags:
             if x >= tag['xMin'] and x <= tag['xMax'] and y >= tag['yMin'] and y <= tag['yMax']:
-                (cX, cY) = (int((tag['xMin'] + tag['xMax']) / 2), int((tag['yMin'] + tag['yMax']) / 2))
-
-                x_physical = (cX - principal_point_x) / focal_length_x
-                y_physical = (cY - principal_point_y) / focal_length_y
-                z_physical = 1 
-
-                print("[INFO] AprilTag center physical coordinates (x, y, z): ({:.2f}, {:.2f}, {:.2f})".format(
-                    x_physical, y_physical, z_physical))
-
-                # Distance from camera to tag - NEEDED for cenering the robot
-                distance = -1 * (tag_height_meters * focal_length_y) / (tag['yMin'] - tag['yMax'])
-
-                # Print the distance to the HTML page
-                message_dist = ("[INFO] Distance to AprilTag: {:.2f} meters".format(distance))
-                return jsonify({'message': message_dist})
+                tracking_tag = tag
+                #
+                return jsonify({'message': 'Switched to tag centering mode.'})
         
         return jsonify({'message': 'Clicked outside of all tags'})
 
@@ -84,72 +76,179 @@ def get_frames():
                 frame_buffer = frame_buffer[frame_end + 2:]
 
             frame_end = frame_buffer.find(b'\xff\xd9')
-
 def process_frame(frame):
     global detected_tags  
+    global tracking_tag  
 
     nparr = np.frombuffer(frame, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    results = detector.detect(gray)
+    # results = detector.detect(gray)
+
+    results, overlay = apriltag.detect_tags(gray,
+                                            detector,
+                                            camera_params=(focal_length_x, focal_length_y, principal_point_x, principal_point_y),
+                                            tag_size=tag_height_meters,
+                                            vizualization=3,
+                                            verbose=3,
+                                            annotation=True
+                                              )
 
     with tags_lock:
-        detected_tags.clear()
-        for r in results:
-            corners = np.array(r.corners, dtype=np.int32)
-            cv2.polylines(image, [corners], True, (0, 255, 0), 2)
-            tag = {
-                'xMin': int(corners[:, 0].min()),
-                'yMin': int(corners[:, 1].min()),
-                'xMax': int(corners[:, 0].max()),
-                'yMax': int(corners[:, 1].max())
-            }
-            detected_tags.append(tag)
+        if tracking_tag is None:
+            detected_tags.clear()
+            # for r in results:
+            #     # print("curr: ", r.tag_id)
+            #     corners = np.array(r.corners, dtype=np.int32)
+            #     cv2.polylines(image, [corners], True, (0, 255, 0), 2)
+            #     tag = {
+            #         'xMin': int(corners[:, 0].min()),
+            #         'yMin': int(corners[:, 1].min()),
+            #         'xMax': int(corners[:, 0].max()),
+            #         'yMax': int(corners[:, 1].max()),
+            #         'id' : r.tag_id,
+                    
+            #     }
+            #     detected_tags.append(tag)
+            i = 0
+            while (i < len(results)):
+                (ptA, ptB, ptC, ptD)  = results[i].corners
+                corners = results[i].corners
+                corners = np.array(results[i].corners, dtype=np.int32)
+                cv2.polylines(image, [corners], True, (0, 255, 0), 2)
+                ptB = (int(ptB[0]), int(ptB[1]))
+                ptC = (int(ptC[0]), int(ptC[1]))
+                ptD = (int(ptD[0]), int(ptD[1]))
+                ptA = (int(ptA[0]), int(ptA[1]))
 
-    #-HSV stuff-----------------------------------------
-    nparr = np.frombuffer(frame, np.uint8)
-    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                cX = int(results[i].center[0])
+                cY = int(results[i].center[1])
+                distance, angle = get_distance_and_angle(results[i + 1])
+                
+                tag = {
+                    'xMin': int(corners[:, 0].min()),
+                    'yMin': int(corners[:, 1].min()),
+                    'xMax': int(corners[:, 0].max()),
+                    'yMax': int(corners[:, 1].max()),
+                    'id' : results[i].tag_id,
+                    'pose': results[i + 1]
+                    
+                }
+                detected_tags.append(tag)
+                i+=4
+        else:
+            # Handle tracking mode
+            i = 0
+            while (i < len(results)):
+                corners = np.array(results[i].corners, dtype=np.int32)
+                if tracking_tag['id'] == results[i].tag_id:  # Assuming each tag has a unique 'id'
+                    cv2.polylines(image, [corners], True, (0, 0, 255), 2)
+                    # distance = calculate_distance(corners)
+                    distance, angle = get_distance_and_angle(results[i + 1])
+                    tracking_tag['corners'] = corners
+                    send_tag_data_to_remote_two(angle, distance)
+                    if distance < 0.1:
+                        # tag_meet_distance = True
+                        send_message('DISTANCE MET')
+                    # Send head-on data
+                    if is_tag_head_on(angle):
+                        # tag_is_head_on = True
+                        send_message('HEAD ON MET')
+                    if distance < 0.1 and is_tag_head_on(angle):
+                        tracking_tag = None  # Stop tracking
+                        print("DONE TRACKING TAG")
+                        send_tag_done_to_remote()
 
-    # Convert frame to HSV color space
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-    # Define HSV color range for detection
-    lower_green = np.array([40, 100, 100])
-    upper_green = np.array([80, 255, 255])
-
-    # Create mask to isolate green color
-    mask = cv2.inRange(hsv_image, lower_green, upper_green)
-
-    # Find contours in the mask
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Process contours
-    for contour in contours:
-        # Filter contours based on criteria (e.g., area)
-        area = cv2.contourArea(contour)
-        if area > 100:
-            # Get bounding box of contour
-            x, y, w, h = cv2.boundingRect(contour)
-            # Draw bounding box on original frame
-            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-            # Calculate tag center
-            cX = x + w // 2
-            cY = y + h // 2
-            # Append detected tag to the list
-            detected_tags.append({
-                'xMin': x,
-                'yMin': y,
-                'xMax': x + w,
-                'yMax': y + h,
-                'centerX': cX,
-                'centerY': cY
-            })
-    #-end of hsv stuff------------------------
+                    else:
+                        send_tag_data_to_remote(tracking_tag, distance, angle)
+                    break
 
     ret, buffer = cv2.imencode('.jpg', image)
     return buffer.tobytes()
+
+def calculate_distance(corners):
+    y_min, y_max = corners[:, 1].min(), corners[:, 1].max()
+    distance = -1 * (tag_height_meters * focal_length_y) / (y_min - y_max)
+    return distance
+
+def send_tag_data_to_remote_two(angle, distance):
+    print("sending info...")
+    data = {
+        'angle': angle,
+        'distance': distance
+    }
+    remote_url = 'http://192.168.1.2:5003'
+    try:
+        requests.post(remote_url, json=data)
+    except requests.RequestException as e:
+        print(f"Error sending tag data to remote: {e}")
+
+def get_distance_and_angle(pose_matrix):
+    # Extract translation vector (first 3 elements of the last column)
+    translation_vector = pose_matrix[:3, 3]
+    distance = np.linalg.norm(translation_vector)
+    rotation_matrix = pose_matrix[:3, :3]
+
+    euler_angles_rad = np.arccos((np.trace(rotation_matrix) - 1) / 2)
+    angle_degrees = np.degrees(euler_angles_rad)
+
+    return distance, angle_degrees
+
+def is_tag_head_on(angle):
+
+    # Compute each corner's angle and check if they are within the tolerance
+    tolerance = 10  # degrees
+    expected_angle = 90  # degrees
+
+    if not (expected_angle - tolerance <= angle <= expected_angle + tolerance):
+        return False
+
+    # If we reach here, all angles are within tolerance. The tag is considered head-on.
+    return True
+
+
+def send_message(message):
+    print("sending info...")
+    data = {
+        'status': message
+    }
+    remote_url = 'http://192.168.1.2:5003'
+    try:
+        requests.post(remote_url, json=data)
+    except requests.RequestException as e:
+        print(f"Error sending done message to remote: {e}")
+
+
+def send_tag_data_to_remote(tag, distance, angle):
+    # You were passing corners and distance which would not be available here. 
+    # We need to fetch or calculate them within this function now.
+    print("sending info...")
+    # corners = tag['corners']  # Assuming the 'corners' are stored in the tag dictionary
+
+    data = {
+        'angle': angle,
+        'distance': distance
+    }
+    remote_url = 'http://192.168.1.2:5003'
+    try:
+        requests.post(remote_url, json=data)
+    except requests.RequestException as e:
+        print(f"Error sending tag data to remote: {e}")
+
+def send_tag_done_to_remote():
+    print("sending info...")
+    data = {
+        'status': 'DONE'
+    }
+    remote_url = 'http://192.168.1.2:5003'
+    try:
+        requests.post(remote_url, json=data)
+    except requests.RequestException as e:
+        print(f"Error sending done message to remote: {e}")
+
+
+
 
 if __name__ == '__main__':
     hostname = socket.gethostname()
