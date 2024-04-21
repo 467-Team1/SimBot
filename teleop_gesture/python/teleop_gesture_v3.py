@@ -12,6 +12,29 @@ from flask import Flask, request, jsonify
 
 def main():
 
+    # --- --- Claw initialization Start --- --- 
+
+    # Claw check - begins at false since claw is open
+    Claw_is_Closed = False
+
+    # Needed to avoid GPIO warnings
+    GPIO.setwarnings(False)
+
+    # We need to name all of the pins, so set the naming mode 
+    # as this sets the names to board mode, which just names the pins 
+    # according to the numbers
+    GPIO.setmode(GPIO.BOARD)
+
+    # we need an output to send our PWM signal on
+    # NOTE: Pin 11 is the GPIO pin and it can be changed
+    GPIO.setup(11, GPIO.OUT)
+
+    # setup PWM at 400 Hz
+    # The freq is unique to the servo motor
+    pwm=GPIO.PWM(11, 400)
+
+    # --- --- Claw initialization End--- --- 
+
     # Raspberry Pi IP address and port
     server_ip = 'localhost'  # Listen on localhost
     server_port = 12345  # Choose a port that is not already in use
@@ -41,9 +64,9 @@ def main():
     lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
 
     # For Testing Purposes ONLY #
-    pygame.init()
-    pygame.display.set_caption("MBot TeleOp")
-    screen = pygame.display.set_mode([100,100])
+    # pygame.init()
+    # pygame.display.set_caption("MBot TeleOp")
+    # screen = pygame.display.set_mode([100,100])
     ###########################################
 
     time.sleep(0.5)
@@ -62,7 +85,7 @@ def main():
             # print("Received data:", data)
             if data == "Continue" or data == "Stop" or data == "SpeedUp" or data == "SlowDown":
                 left_hand_gesture = data
-            elif data == "Forward" or data == "Backwards" or data == "TurnRight" or data == "TurnLeft":
+            elif data == "Forward" or data == "Backwards" or data == "TurnRight" or data == "TurnLeft" or data == "ClawOpen" or data == "ClawClose":
                 right_hand_gesture = data
             else:
                 None
@@ -89,6 +112,26 @@ def main():
         elif right_hand_gesture == "TurnRight":
             current_state = right(cur_motor_command, left_hand_gesture)
             print("State: ", current_state)
+
+            '''
+            These two states are for the claw control assuming there are two gestures
+            for opening and closing the claw. The claw will only close if it is open
+            and vice versa. However, it would be easy to convert this into one state
+            instead of two with a simple if statement checking the current angle of
+            the claw. It would depend on whether we want the user to use separate gestures
+            or not. Until we can test, it is up to personal preference. 
+
+            I even wrote the function if we want to switch over called claw_move
+            '''
+        elif right_hand_gesture == "ClawClose" and Claw_is_Closed == False:
+            current_state = claw_close(cur_motor_command, pwm)
+            print("State: ", current_state)
+            Claw_is_Closed = True
+        
+        elif right_hand_gesture == "ClawOpen" and Claw_is_Closed == True:
+            current_state = claw_open(cur_motor_command, pwm)
+            print("State: ", current_state)
+            Claw_is_Closed = False
 
         # Publish the motor command - [might be worth having cur_motor_command published every single time it changes
         # not sure if this will slow down computation, more than likely, for now just leave it here until further testing]

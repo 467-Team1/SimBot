@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./teleop_gesture/python"
+    ],
+    "cmake.sourceDirectory": "/Users/cpgvega/Library/Mobile Documents/com~apple~CloudDocs/Michigan/2023-2024 UMICH/Winter 2024/EECS 467/design_project/AprilTag"
+}

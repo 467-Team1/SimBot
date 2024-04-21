@@ -13,7 +13,7 @@ GPIO.setwarnings(False)
 # Input: angle -> the angle you want the servo to rotate to
 # Function: Calculates the duty cycle and sets the servo to that angle
 def SetPWM(angle):
-	# sets a variable equal to our angle divided by 18 and 2 added
+    # sets an duty cycle approximately to 90 degrees
 	duty = angle
 	# turns on the pin for output
 	GPIO.output(11, True)
@@ -32,9 +32,11 @@ def SetPWM(angle):
 GPIO.setmode(GPIO.BOARD)
 
 # we need an output to send our PWM signal on
+# NOTE: Pin 11 is the GPIO pin and it can be changed
 GPIO.setup(11, GPIO.OUT)
 
-# setup PWM on pin #3 at 50Hz
+# setup PWM at 400 Hz
+# The freq is unique to the servo motor
 pwm=GPIO.PWM(11, 400)
 
 # start it with 0 duty cycle so it doesn't set any angles on startup

@@ -1,5 +1,9 @@
 from enum import Enum
 import numpy as np
+# Claw packages
+import RPi.GPIO as GPIO
+from time import sleep
+
 
 class State(Enum):
     FORWARD = 1
@@ -54,6 +58,7 @@ def speed_up(cur_motor_command, current_state):
 def stop(cur_motor_command):
     print("Stopping...")
     cur_motor_command.trans_v = 0.0
+    cur_motor_command.angular_v = 0.0
 
 ### DIRECTONAL FUNCTIONS ###
 
@@ -145,3 +150,95 @@ def right(cur_motor_command, left_hand_gesture):
         # Slowly Decelerate to 0.0 m/s - Change '10' to '>10' to control the speed of deceleration
         for step in np.linspace(0, 0.5, 10):
             cur_motor_command.angular_v -= step
+
+
+### CLAW FUNCTIONS ###
+
+# Claw Close - closes the claw
+def claw_close(cur_motor_command, pwm):
+    print("Setting speed to 0.0 m/s and 0.0 rad/s")
+    cur_motor_command.trans_v = 0.0
+    cur_motor_command.angular_v = 0.0
+
+    print("Closing Claw...")
+
+    print("Reseting angle...")
+    # start it with 0 duty cycle so it doesn't set any angles on startup
+    pwm.start(20)
+    sleep(6)
+
+    try:
+        print("set angle to: 90 degrees")
+        # sets an duty cycle approximately to 90 degrees
+        duty = 48
+        # turns on the pin for output
+        GPIO.output(11, True)
+        # changes the duty cycle to match what we calculated
+        pwm.ChangeDutyCycle(duty)
+        sleep(5)
+    finally:
+        pwm.stop()
+        GPIO.cleanup()
+
+    return State.STAND_BY
+
+# Claw Open - opens the claw
+def claw_open(cur_motor_command, pwm):
+    print("Setting speed to 0.0 m/s and 0.0 rad/s")
+    cur_motor_command.trans_v = 0.0
+    cur_motor_command.angular_v = 0.0
+
+    print("Opening Claw...")
+    
+    try:
+        print("set angle to: 0 degrees")
+        # sets a variable equal to our angle divided by 18 and 2 added
+        duty = 20
+        # turns on the pin for output
+        GPIO.output(11, True)
+        # changes the duty cycle to match what we calculated
+        pwm.ChangeDutyCycle(duty)
+        sleep(5)
+    finally:
+        pwm.stop()
+        GPIO.cleanup()
+
+    print("moved to 0 degrees")
+
+    return State.STAND_BY
+
+'''
+
+# Claw Move - either opens or closes the claw
+def claw_move(cur_motor_command, pwm, Claw_is_Closed):
+    print("Setting speed to 0.0 m/s and 0.0 rad/s")
+    cur_motor_command.trans_v = 0.0
+    cur_motor_command.angular_v = 0.0
+
+    if Claw_is_Closed:
+        print("set angle to: 0 degrees")
+        # sets a variable equal to our angle divided by 18 and 2 added
+        duty = 20
+    else:
+        print("Reseting angle...")
+        # start it with 0 duty cycle so it doesn't set any angles on startup
+        pwm.start(20)
+        sleep(6)
+        
+        print("set angle to: 90 degrees")
+        # sets an duty cycle approximately to 90 degrees
+        duty = 48
+
+    try:
+        # turns on the pin for output
+        GPIO.output(11, True)
+        # changes the duty cycle to match what we calculated
+        pwm.ChangeDutyCycle(duty)
+        sleep(5)
+    finally:
+        pwm.stop()
+        GPIO.cleanup()
+
+    return State.STAND_BY
+
+'''
