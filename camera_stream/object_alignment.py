@@ -81,5 +81,6 @@ def test():
 
 # Main
 if __name__ == '__main__':
+    # Test the functions
     test()
 
