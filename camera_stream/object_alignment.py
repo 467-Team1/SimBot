@@ -17,19 +17,31 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 # Assuming the pose of the april tag is being collected from the april tag
-tag_pose = np.array([[0.8835, -0.4682, -0.0133, 0.0163], [0.4682, 0.8820, 0.0532, 0.0054], [-0.0131, -0.0532, 0.9985, 0.1433], [0.0000, 0.0000, 0.0000, 1.0000]])
+angle = None
 
 # Flag of whether the bot is close enough to tag, assumed that we are getting it
-is_tag_head_on = False
+head_on = None
 
 # Collect Pose of the April Tag
+@app.route('/', methods=['POST'])
 def receive_data():
-    return
+    global angle
+    global head_on
+    data = request.json
 
-def yaw_angle(R):
-    # Convert the rotation matrix to euler angles
-    beta = -np.arcsin(R[2,0]) # equivalent to y axis
-    return np.arctan2(R[1,0]/np.cos(beta), R[0,0]/np.cos(beta)) # equivalent to z axis
+    if data.get('status') == 'DONE':
+        print('DONE TRACKING TAG')
+    else:
+        # Assuming the data includes 'corners' and 'distance' as sent by your application
+        angle = data.get('angle')
+        head_on = data.get('headon')
+    
+    # Return a success response
+    return jsonify({'status': 'success'}), 200
+
+if __name__ == '__main__':
+    # Run the Flask app on port 8000
+    app.run(host='0.0.0.0', port=5003, debug=True)
 
 def angle_correction(cur_motor_command):
     
@@ -37,10 +49,10 @@ def angle_correction(cur_motor_command):
     cur_motor_command.angular_v = 0.0
 
     # Turn the robot until the z value ~0
-    while yaw_angle(tag_pose[0:3, 0:3]) > 0.15 or yaw_angle(tag_pose[0:3, 0:3]) < -0.15:
-        if yaw_angle(tag_pose[0:3, 0:3]) > 0.15:
+    while angle > 0.15 or angle < -0.15:
+        if angle > 0.15:
             cur_motor_command.angular_v = 0.1
-        elif yaw_angle(tag_pose[0:3, 0:3]) < -0.15:
+        elif angle < -0.15:
             cur_motor_command.angular_v = -0.1
 
     # Set angular velocity to 0 rad/s
@@ -52,7 +64,7 @@ def distance_correction(cur_motor_command):
     # Set linear velocity to 0.0 m/s
     cur_motor_command.trans_v = 0.0
 
-    while not is_tag_head_on:
+    while not head_on:
         # Move the robot forward until the tag is head on
         cur_motor_command.trans_v = 0.1
 
@@ -60,3 +72,14 @@ def distance_correction(cur_motor_command):
     cur_motor_command.trans_v = 0.0
 
     return
+
+def test():
+    global angle
+    global head_on
+    print("Angle" + angle)
+    print("Head On" + head_on)
+
+# Main
+if __name__ == '__main__':
+    test()
+
