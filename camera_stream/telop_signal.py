@@ -11,10 +11,12 @@ def receive_data():
         print('DONE TRACKING TAG')
     else:
         # Assuming the data includes 'corners' and 'distance' as sent by your application
-        corners = data.get('corners')
+        angle = data.get('angle')
         distance = data.get('distance')
-        print("Corners:", corners)
+        headon = data.get('headon')
+        print("Angles:", angle)
         print("Distance:", distance)
+        print("Head ON:", headon)
     
     # Return a success response
     return jsonify({'status': 'success'}), 200
