@@ -12,7 +12,7 @@
 - scikit-learn 0.23.2 or Later (Only if you want to display the confusion matrix)
 - matplotlib 3.3.2 or Later (Only if you want to display the confusion matrix)
 #### April Tag
-- Please Referance READ.md in AprilTag Directory
+- Please Referance `AprilTag/README.md` in AprilTag Directory
 
 ## Hand Gesture Model
 1. Open 1 terminal
