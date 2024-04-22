@@ -18,10 +18,10 @@
 1. Open 1 terminal - *Locally*
 
  In Terminal 1:
- - Navigater to the `hand-gesture-recognition-mediapipe-main/` directory
-```bash
-cd hand-gesture-recognition-mediapipe-main/
-```
+ - Navigate to the `hand-gesture-recognition-mediapipe-main/` directory
+  ```bash
+  cd hand-gesture-recognition-mediapipe-main/
+  ```
 - Run the following command:
   ```bash
   python3 app.py
