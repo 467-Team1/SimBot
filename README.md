@@ -19,8 +19,8 @@
 
  In Terminal 1:
  - Navigate to the `hand-gesture-recognition-mediapipe-main/` directory:
-  ```bash
-  cd teleop_gesture/python/
+ ```bash
+  cd hand-gesture-recognition-mediapipe-main/
   ```
 - Run the following command:
   ```bash
