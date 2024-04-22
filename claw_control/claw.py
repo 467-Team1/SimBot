@@ -1,12 +1,13 @@
 # https://www.instructables.com/Servo-Motor-Control-With-Raspberry-Pi/
 import RPi.GPIO as GPIO
+
 from time import sleep
 # quickly test inputs with command line
 import sys
 set_angle = int(sys.argv[1])
 
 print("Set angle: ", set_angle)
-
+# 17
 
 GPIO.setwarnings(False)
 

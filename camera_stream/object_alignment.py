@@ -16,40 +16,35 @@ from lcmtypes import mbot_encoder_t
 from flask import Flask, request, jsonify
 app = Flask(__name__)
 
-# Assuming the pose of the april tag is being collected from the april tag
+# Current angle of the robot to the april tag
 angle = None
 
-# Flag of whether the bot is close enough to tag, assumed that we are getting it
-head_on = None
+# Current distance of the robot to the april tag
+distance = None
 
-# Collect Pose of the April Tag
-@app.route('/', methods=['POST'])
-def receive_data():
-    global angle
-    global head_on
-    data = request.json
+# Current motor command
+cur_motor_command = mbot_motor_command_t()
 
-    if data.get('status') == 'DONE':
-        print('DONE TRACKING TAG')
-    else:
-        # Assuming the data includes 'corners' and 'distance' as sent by your application
-        angle = data.get('angle')
-        head_on = data.get('headon')
-    
-    # Return a success response
-    return jsonify({'status': 'success'}), 200
+def distance_correction(distance):
+    # Set linear velocity to 0.0 m/s
+    cur_motor_command.trans_v = 0.0
 
-if __name__ == '__main__':
-    # Run the Flask app on port 8000
-    app.run(host='0.0.0.0', port=5003, debug=True)
+    while distance > 0.1: # TODO: Tune this threshold
+        # Move the robot forward until the tag is head on
+        cur_motor_command.trans_v = 0.1
 
-def angle_correction(cur_motor_command):
+    # Set linear velocity to 0.0 m/s
+    cur_motor_command.trans_v = 0.0
+
+    return
+
+def angle_correction(angle):
     
     # Set angular velocity to 0 rad/s
     cur_motor_command.angular_v = 0.0
 
     # Turn the robot until the z value ~0
-    while angle > 0.15 or angle < -0.15:
+    while angle > 0.15 or angle < -0.15: # TODO: Tune this threshold
         if angle > 0.15:
             cur_motor_command.angular_v = 0.1
         elif angle < -0.15:
@@ -60,27 +55,32 @@ def angle_correction(cur_motor_command):
     
     return
 
-def distance_correction(cur_motor_command):
-    # Set linear velocity to 0.0 m/s
-    cur_motor_command.trans_v = 0.0
-
-    while not head_on:
-        # Move the robot forward until the tag is head on
-        cur_motor_command.trans_v = 0.1
-
-    # Set linear velocity to 0.0 m/s
-    cur_motor_command.trans_v = 0.0
-
-    return
-
-def test():
+# Go towards the april tag
+@app.route('/', methods=['POST'])
+def object_alignment():
     global angle
-    global head_on
-    print("Angle" + angle)
-    print("Head On" + head_on)
+    global distance
+    data = request.json
 
-# Main
+    if data.get('status') == 'DONE':
+        print('DONE TRACKING TAG')
+    else:
+        # Update the angle and dustance of the tag
+        angle = data.get('angle') #  TODO: make sure you can collect negative values
+        distance = data.get('distance')
+
+        # Correct Angle
+        angle_correction(angle)
+
+        # Correct Distance
+        distance_correction(distance)
+    
+    # Return a success response
+    return jsonify({'status': 'success'}), 200
+
 if __name__ == '__main__':
-    # Test the functions
-    test()
+    # Run the Flask app on port 8000
+    app.run(host='0.0.0.0', port=5003, debug=True)
+
+
 
