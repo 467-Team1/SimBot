@@ -4,6 +4,7 @@
 - Mbot
 - Python 3
 - Terminal
+- Wifi Router (Please be sure that both Local Machine and MBot are on the same network on the Wifi Router)
 #### Hand Gesture Model Specifics
 - mediapipe 0.8.1 (if using Mac, please download mediapipe 0.10.9)
 - OpenCV 3.4.2 or Later
@@ -20,14 +21,50 @@
 
 1. Open 1 terminal - **Locally**
 
- In Terminal 1:
- - Navigate to the `hand-gesture-recognition-mediapipe-main/` directory:
+In Terminal 1:
+- Navigate to the `hand-gesture-recognition-mediapipe-main/` directory:
  ```bash
   cd hand-gesture-recognition-mediapipe-main/
   ```
 - Run the following command:
   ```bash
   python3 app.py
+  ```
+
+## April Tag Recognition
+
+### Setup and Usage
+
+1. Open 3 terminals - **1 Locally** & **3 MBot**
+
+In Terminal 1 (Mbot):
+- Navigate to the `camera_stream/` directory:
+  ```bash
+  cd camera_stream
+  ```
+- Run the following command:
+  ```bash
+  python3 camerafinal.py
+  ```
+
+In Terminal 2 (Mbot):
+- Navigate to the `camera_stream/` directory:
+  ```bash
+  cd camera_stream
+  ```
+- Run the following command:
+  ```bash
+  python3 object_alignment.py
+  ```
+
+In Terminal 3 (Locally):
+- Navigate to the `AprilTag/scripts/` directory:
+  ```bash
+  cd AprilTag/scripts/
+  ```
+- Run the following command:
+  ```bash
+  python3 receive_stream.py
   ```
 
 ## Teleop Gesture
@@ -80,7 +117,7 @@ In Terminal 3:
 
 Ensure that the terminals are running in the background to maintain the teleoperation functionality.
 
-### Note
+## Note
 
 - Replace `teleop_gesture_v#.py` with the appropriate version of the Python script.
 - Make sure to follow the order of commands as mentioned above for proper execution.
