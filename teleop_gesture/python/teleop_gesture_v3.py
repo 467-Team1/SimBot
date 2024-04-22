@@ -36,7 +36,9 @@ def main():
     # --- --- Claw initialization End--- --- 
 
     # Raspberry Pi IP address and port
-    server_ip = 'localhost'  # Listen on localhost
+    hostname = socket.gethostname()
+    IP = socket.gethostbyname(hostname)
+    server_ip = IP  # Listen on localhost
     server_port = 12345  # Choose a port that is not already in use
 
     # Create a TCP/IP socket

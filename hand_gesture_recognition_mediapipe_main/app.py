@@ -44,7 +44,7 @@ def main():
     # Socket Initialization #############################################################
 
     # Raspberry Pi IP address and port
-    server_ip = 'localhost'  # Localhost since we're using SSH tunneling
+    server_ip = '192.168.1.3'  # Localhost since we're using SSH tunneling
     server_port = 12345  # Use the same port as the server
 
     # Create a TCP/IP socket
@@ -195,7 +195,7 @@ def main():
                 elif(handedness.classification[0].label[0:] == "Right" and hand_sign_id < 8):
                     client_socket.sendall(message.encode())
                 # claw gestures: Sign ID 8, 9
-                elif(handedness.classification[0].label[0:] == "Left" and hand_sign_id > 7):
+                elif(handedness.classification[0].label[0:] == "Right" and hand_sign_id > 7):
                     client_socket.sendall(message.encode())
 
         else:
@@ -211,7 +211,7 @@ def main():
     cv.destroyAllWindows()
 
     # Close Socket ############################################################
-    client_socket.close()
+    client_socket.close() 
 
 
 def select_mode(key, mode):
