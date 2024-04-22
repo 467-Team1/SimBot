@@ -18,7 +18,7 @@
 1. Open 1 terminal
 
  In Terminal 1:
- - Navigater to the `hand-gesture-recognition-mediapipe-main/` directory"
+ - Navigater to the `hand-gesture-recognition-mediapipe-main/` directory
   ```bash
   cd hand-gesture-recognition-mediapipe-main/
   ```
