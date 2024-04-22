@@ -1,14 +1,33 @@
 # 467 Final Project - SimBot
 
-## Teleop Gesture:
-
-This repository contains code for teleoperation of Mbot using gestures. Follow the instructions below to set up and run the teleop_gesture program.
-
 ### Prerequisites
-
 - Mbot
 - Python 3
 - Terminal
+#### Hand Gesture Model Specifics
+- mediapipe 0.8.1 (if using Mac, please download mediapipe 0.10.9)
+- OpenCV 3.4.2 or Later
+- Tensorflow 2.3.0 or Later
+- tf-nightly 2.5.0.dev or later (Only when creating a TFLite for an LSTM model)
+- scikit-learn 0.23.2 or Later (Only if you want to display the confusion matrix)
+- matplotlib 3.3.2 or Later (Only if you want to display the confusion matrix)
+#### April Tag
+- Please Referance READ.md in AprilTag Directory
+
+## Hand Gesture Model
+1. Open 1 terminal
+
+ In Terminal 1:
+ - Navigater to the `hand-gesture-recognition-mediapipe-main/` directory"
+  ```bash
+  cd hand-gesture-recognition-mediapipe-main/
+  ```
+- Run the following command:
+  ```bash
+  python3 app.py
+  ```
+
+## Teleop Gesture:
 
 ### Setup and Usage
 
