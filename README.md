@@ -13,7 +13,7 @@
 - scikit-learn 0.23.2 or Later (Only if you want to display the confusion matrix)
 - matplotlib 3.3.2 or Later (Only if you want to display the confusion matrix)
 #### April Tag
-- Please Referance `AprilTag/README.md`
+- Please Referance `april_tag/README.md`
 
 ## Hand Gesture Model
 
@@ -22,9 +22,9 @@
 1. Open 1 terminal - **Locally**
 
 In Terminal 1:
-- Navigate to the `hand-gesture-recognition-mediapipe-main/` directory:
+- Navigate to the `hand_gesture_recognition_mediapipe_main/` directory:
  ```bash
-  cd hand-gesture-recognition-mediapipe-main/
+  cd hand_gesture_recognition_mediapipe_main/
   ```
 - Run the following command:
   ```bash
@@ -58,9 +58,9 @@ In Terminal 2 (Mbot):
   ```
 
 In Terminal 3 (Locally):
-- Navigate to the `AprilTag/scripts/` directory:
+- Navigate to the `april_tag/scripts/` directory:
   ```bash
-  cd AprilTag/scripts/
+  cd april_tag/scripts/
   ```
 - Run the following command:
   ```bash
