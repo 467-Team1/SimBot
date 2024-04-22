@@ -15,6 +15,8 @@ from utils import CvFpsCalc
 from model import KeyPointClassifier
 from model import PointHistoryClassifier
 
+# import lcm
+import socket
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -39,6 +41,18 @@ def get_args():
 
 
 def main():
+    # Socket Initialization #############################################################
+
+    # Raspberry Pi IP address and port
+    server_ip = 'localhost'  # Localhost since we're using SSH tunneling
+    server_port = 12345  # Use the same port as the server
+
+    # Create a TCP/IP socket
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Connect to the server
+    client_socket.connect((server_ip, server_port))
+
     # Argument parsing #################################################################
     args = get_args()
 
@@ -169,13 +183,21 @@ def main():
                     point_history_classifier_labels[most_common_fg_id[0][0]],
                 )
 
-                # Write label to file (added code)
-                if hand_sign_id < 4:
-                    with open('left_hand_label.txt', 'w') as f:
-                        f.write(keypoint_classifier_labels[hand_sign_id])
-                else:
-                    with open('right_hand_label.txt', 'w') as f:
-                        f.write(keypoint_classifier_labels[hand_sign_id])
+                # Socket send ############################################
+                print("hand: ", handedness.classification[0].label[0:], "\n")
+                print("Send message: ", keypoint_classifier_labels[hand_sign_id], "\n")
+                print("Sign ID: ", hand_sign_id, "\n")
+                message = keypoint_classifier_labels[hand_sign_id]
+                # left hand gestures: Sign ID 0-3
+                if(handedness.classification[0].label[0:] == "Left" and hand_sign_id < 4):
+                    client_socket.sendall(message.encode())
+                # right hand gestures: Sign ID 4-7
+                elif(handedness.classification[0].label[0:] == "Right" and hand_sign_id < 8):
+                    client_socket.sendall(message.encode())
+                # claw gestures: Sign ID 8, 9
+                elif(handedness.classification[0].label[0:] == "Left" and hand_sign_id > 7):
+                    client_socket.sendall(message.encode())
+
         else:
             point_history.append([0, 0])
 
@@ -187,6 +209,9 @@ def main():
 
     cap.release()
     cv.destroyAllWindows()
+
+    # Close Socket ############################################################
+    client_socket.close()
 
 
 def select_mode(key, mode):
