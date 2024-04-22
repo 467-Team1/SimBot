@@ -20,8 +20,8 @@
  In Terminal 1:
  - Navigater to the `hand-gesture-recognition-mediapipe-main/` directory
 ```bash
-  cd hand-gesture-recognition-mediapipe-main/
-  ```
+cd hand-gesture-recognition-mediapipe-main/
+```
 - Run the following command:
   ```bash
   python3 app.py
