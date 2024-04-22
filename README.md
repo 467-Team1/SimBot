@@ -1,6 +1,6 @@
 # 467 Final Project - SimBot
 
-### Prerequisites
+## Prerequisites
 - Mbot
 - Python 3
 - Terminal
