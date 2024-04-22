@@ -1,4 +1,9 @@
 # 467 Final Project - SimBot
+## Authors
+- [Laasya Chukka](https://github.com/lchukka450) - [lchukka@umich.edu](mailto:lchukka@umich.edu)
+- [Ansh Mehta](https://github.com/anshm10) - [anshm@umich.edu](mailto:anshm@umich.edu)
+- [Christian Vega](https://github.com/cpgvega) - [email@example.com](mailto:cpvega@umich.edu)
+- [Wendi Zhang](https://github.com/zwendi123) - [zwendi@umich.edu](mailto:zwendi@umich.edu)
 
 ## Prerequisites
 - Mbot
