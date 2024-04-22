@@ -39,7 +39,7 @@ In Terminal 1:
 - Navigate to the `teleop_gesture/python/` directory:
   ```bash
   cd teleop_gesture/python/
-    ```
+  ```
 - Write the following command, but do not run it yet:
   ```bash
   python3 teleop_gesture_v#.py
