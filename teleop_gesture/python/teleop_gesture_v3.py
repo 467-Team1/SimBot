@@ -123,12 +123,12 @@ def main():
 
             I even wrote the function if we want to switch over called claw_move
             '''
-        elif right_hand_gesture == "ClawClose" and Claw_is_Closed == False:
+        elif right_hand_gesture == "Close" and Claw_is_Closed == False:
             current_state = claw_close(cur_motor_command, pwm)
             print("State: ", current_state)
             Claw_is_Closed = True
         
-        elif right_hand_gesture == "ClawOpen" and Claw_is_Closed == True:
+        elif right_hand_gesture == "Open" and Claw_is_Closed == True:
             current_state = claw_open(cur_motor_command, pwm)
             print("State: ", current_state)
             Claw_is_Closed = False
