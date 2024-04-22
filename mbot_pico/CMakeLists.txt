@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
-set(PICO_SDK_PATH ${CMAKE_SOURCE_DIR}/lib/pico-sdk)
+set(PICO_SDK_PATH ${CMAKE_SOURCE_DIR}/lib/sdk)
 include(${CMAKE_SOURCE_DIR}/lib/pico-sdk/external/pico_sdk_import.cmake)
 
 project(mbot_pico C CXX ASM)
