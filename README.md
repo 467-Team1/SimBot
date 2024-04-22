@@ -35,7 +35,7 @@ In Terminal 1:
 
 ### Setup and Usage
 
-1. Open 3 terminals - **1 Locally** & **3 MBot**
+1. Open 3 terminals - **1 Locally** & **2 MBot**
 
 In Terminal 1 (Mbot):
 - Navigate to the `camera_stream/` directory:
