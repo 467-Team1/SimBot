@@ -133,6 +133,6 @@ export DISPLAY=:0.0
 ```
 
 ## References
-[hand-gesture-recognition-using-mediapipe](https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe.git)
-[AprilTag](https://github.com/Tinker-Twins/AprilTag.git)
+- [hand-gesture-recognition-using-mediapipe](https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe.git)
+- [AprilTag](https://github.com/Tinker-Twins/AprilTag.git)
 
