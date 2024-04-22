@@ -15,7 +15,10 @@
 - Please Referance `AprilTag/README.md`
 
 ## Hand Gesture Model
-1. Open 1 terminal - *Locally*
+
+### Setup and Usage
+
+1. Open 1 terminal - **Locally**
 
  In Terminal 1:
  - Navigate to the `hand-gesture-recognition-mediapipe-main/` directory:
@@ -27,13 +30,13 @@
   python3 app.py
   ```
 
-## Teleop Gesture:
+## Teleop Gesture
 
 ### Setup and Usage
 
 1. Reflash the `*.uf2` file into Mbot.
 
-2. Open three separate terminals - *MBot*
+2. Open three separate terminals - **MBot**
 
 In Terminal 1:
 - Navigate to the `teleop_gesture/python/` directory:
@@ -81,7 +84,7 @@ Ensure that the terminals are running in the background to maintain the teleoper
 
 - Replace `teleop_gesture_v#.py` with the appropriate version of the Python script.
 - Make sure to follow the order of commands as mentioned above for proper execution.
-- *Locally* means to open terminals on your local computer, *NOT* on the Mbot's Raspberry Pi
+- **Locally** means to open terminals on your local computer, *NOT* on the Mbot's Raspberry Pi
 
 ## Useful Commands
 ### To allow UI's to show up on VNC Viewer
