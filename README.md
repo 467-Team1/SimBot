@@ -91,7 +91,7 @@ In Terminal 2:
   ```bash
   cd teleop_gesture/shim_timesync_binaries/
   ```
-- Make the `shim` file executable:
+- Give the `shim` file permission to execute:
   ```bash
   chmod +x ./shim
   ```
