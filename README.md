@@ -118,7 +118,6 @@ In Terminal 3:
 Ensure that the terminals are running in the background to maintain the teleoperation functionality.
 
 ## Note
-
 - Replace `teleop_gesture_v#.py` with the appropriate version of the Python script.
 - Make sure to follow the order of commands as mentioned above for proper execution.
 - **Locally** means to open terminals on your local computer, *NOT* on the Mbot's Raspberry Pi
@@ -132,4 +131,8 @@ once in the Raspberry Pi, run this command:
 ```bash
 export DISPLAY=:0.0
 ```
+
+## References
+April Tag: https://github.com/Tinker-Twins/AprilTag.git
+Hand Gesture: https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe.git
 
