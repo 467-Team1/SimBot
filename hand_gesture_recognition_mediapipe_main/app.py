@@ -44,7 +44,8 @@ def main():
     # Socket Initialization #############################################################
 
     # Raspberry Pi IP address and port
-    server_ip = '192.168.1.3'  # Localhost since we're using SSH tunneling
+    # TODO: Replace host IP with MBot's if MBot IP changed (use ifconfig and use the wlan0 IP address)
+    server_ip = '67.194.41.146'  # Localhost since we're using SSH tunneling
     server_port = 12345  # Use the same port as the server
 
     # Create a TCP/IP socket

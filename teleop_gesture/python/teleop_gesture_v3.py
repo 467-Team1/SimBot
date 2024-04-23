@@ -6,6 +6,7 @@ from lcmtypes import mbot_encoder_t
 import time
 import sys
 import os
+import RPi.GPIO as GPIO
 from state_functions import *
 import socket
 from flask import Flask, request, jsonify
@@ -31,13 +32,14 @@ def main():
 
     # setup PWM at 400 Hz
     # The freq is unique to the servo motor
-    pwm=GPIO.PWM(11, 400)
+    pwm = GPIO.PWM(11, 400)
+    pwm.start(25)
 
-    # GPIO -> Output
-    GPIO.output(11, True)
+    # # GPIO -> Output
+    # GPIO.output(11, True)
 
-    # Reset to Open
-    pwm.ChangeDutyCycle(20)
+    # # Reset to Open
+    # pwm.ChangeDutyCycle(20)
 
     # # Clean Up
     # pwm.stop()
@@ -48,7 +50,8 @@ def main():
     # Raspberry Pi IP address and port
     hostname = socket.gethostname()
     IP = socket.gethostbyname(hostname)
-    server_ip = '192.168.1.3'  # Listen on localhost
+    # TODO: Replace host IP with MBot's if MBot IP changed (use ifconfig and use the wlan0 IP address)
+    server_ip = '192.168.1.2'  # Listen on localhost
     server_port = 12345  # Choose a port that is not already in use
 
     # Create a TCP/IP socket
@@ -74,13 +77,6 @@ def main():
 
     # LCM Object
     lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
-
-    # For Testing Purposes ONLY #
-    # pygame.init()
-    # pygame.display.set_caption("MBot TeleOp")
-    # screen = pygame.display.set_mode([100,100])
-    ###########################################
-
     time.sleep(0.5)
 
     # State Machine
@@ -137,58 +133,19 @@ def main():
             '''
         elif right_hand_gesture == "Close" and Claw_is_Closed == False:
             current_state = claw_close(cur_motor_command, pwm)
-            try:
-                # Needed to avoid GPIO warnings
-                GPIO.setwarnings(False)
-
-                # We need to name all of the pins, so set the naming mode 
-                # as this sets the names to board mode, which just names the pins 
-                # according to the numbers
-                GPIO.setmode(GPIO.BOARD)
-
-                # we need an output to send our PWM signal on
-                # NOTE: Pin 11 is the GPIO pin and it can be changed
-                GPIO.setup(11, GPIO.OUT)
-                # setup PWM at 400 Hz
-                # The freq is unique to the servo motor
-                pwm=GPIO.PWM(11, 400)
-
-                # GPIO -> Output
-                GPIO.output(11, True)
-            except:
-                print("ERROR: GPIO could not be redefined")
             print("State: ", current_state)
+
+            # Update the claw flag
             Claw_is_Closed = True
-            print("Claw Close:", Claw_is_Closed)
         
         elif right_hand_gesture == "Open" and Claw_is_Closed == True:
             current_state = claw_open(cur_motor_command, pwm)
-            try:
-                # Needed to avoid GPIO warnings
-                GPIO.setwarnings(False)
-
-                # We need to name all of the pins, so set the naming mode 
-                # as this sets the names to board mode, which just names the pins 
-                # according to the numbers
-                GPIO.setmode(GPIO.BOARD)
-
-                # we need an output to send our PWM signal on
-                # NOTE: Pin 11 is the GPIO pin and it can be changed
-                GPIO.setup(11, GPIO.OUT)
-                # setup PWM at 400 Hz
-                # The freq is unique to the servo motor
-                pwm=GPIO.PWM(11, 400)
-
-                # GPIO -> Output
-                GPIO.output(11, True)
-            except:
-                print("ERROR: GPIO could not be redefined")
             print("State: ", current_state)
-            Claw_is_Closed = False
-            print("Claw Open:", Claw_is_Closed)
 
-        # Publish the motor command - [might be worth having cur_motor_command published every single time it changes
-        # not sure if this will slow down computation, more than likely, for now just leave it here until further testing]
+            # Update the claw flag
+            Claw_is_Closed = False
+
+        # Publish the motor command
         lc.publish("MBOT_MOTOR_COMMAND", cur_motor_command.encode())
 
         # Sleep for 0.1 seconds

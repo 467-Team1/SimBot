@@ -23,5 +23,5 @@ def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace;boundary=frame')
 
 if __name__ == '__main__':
-    # TODO: Replace host IP if MBot IP changed (use ifconfig and use the wlan0 IP address)
+    # TODO: Replace host IP with MBot's if MBot IP changed (use ifconfig and use the wlan0 IP address)
     app1.run(host='192.168.1.3', port=5000, threaded=True)
