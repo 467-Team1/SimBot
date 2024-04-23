@@ -1,6 +1,8 @@
+# State Packages
 from enum import Enum
 import numpy as np
-# Claw packages
+
+# Claw Packages
 import RPi.GPIO as GPIO
 from time import sleep
 
@@ -12,7 +14,7 @@ class State(Enum):
     RIGHT = 4
     STAND_BY = 5
 
-### VELOCITY CHANGE FUNCTIONS ### NOT WORKING FULLY YET -> LEAVE AS PRINTS UNTIL MAIN HAS BEEN UPDATED
+### VELOCITY CHANGE FUNCTIONS ### 
 
 # Slow Down - decelerates to 0.05 m/s, 0.05 rad/s or -0.05 m/s, -0.05 rad/s
 def slow_down(cur_motor_command, current_state):
@@ -20,14 +22,14 @@ def slow_down(cur_motor_command, current_state):
     trans_speed_cap = 0.20
 
     print("Decelerating...")
-    # # Decrease the speed until it reaches 0.05 m/s
+    # # Decrease the speed until it reaches 0.2 m/s
     if current_state == State.FORWARD:
         # Check if the robot is the robot reached the minimum speed
         cur_motor_command.trans_v -= step
         if cur_motor_command.trans_v <= trans_speed_cap:
             cur_motor_command.trans_v = trans_speed_cap
 
-    # # Increase the speed until it reaches -0.05 m/s
+    # # Increase the speed until it reaches -0.2 m/s
     elif current_state == State.BACKWARD:
         cur_motor_command.trans_v += step
         # Check if the robot is the robot reached the minimum speed
@@ -40,14 +42,14 @@ def speed_up(cur_motor_command, current_state):
     trans_speed_cap = 0.40
 
     print("Accelerating...")
-    # # Increase the speed until it reaches 0.5 m/s
+    # # Increase the speed until it reaches 0.4 m/s
     if current_state == State.FORWARD:
         # Check if the robot is the robot reached the minimum speed
         cur_motor_command.trans_v += step
         if cur_motor_command.trans_v >= trans_speed_cap:
             cur_motor_command.trans_v = trans_speed_cap
 
-    # Increase the speed until it reaches -0.5 m/s
+    # Increase the speed until it reaches -0.4 m/s
     elif current_state == State.BACKWARD:
         cur_motor_command.trans_v -= step
         # Check if the robot is the robot reached the minimum speed
@@ -74,7 +76,7 @@ def forward(cur_motor_command, left_hand_gesture):
     if left_hand_gesture == "SlowDown":
         slow_down(cur_motor_command, State.FORWARD)
     if left_hand_gesture == "Stop":
-        stop(cur_motor_command, State.FORWARD)
+        stop(cur_motor_command)
     else:
         # Check if the robot is already moving forward
         if cur_motor_command.trans_v > 0.0:
@@ -160,22 +162,29 @@ def claw_close(cur_motor_command, pwm):
     cur_motor_command.trans_v = 0.0
     cur_motor_command.angular_v = 0.0
 
+    # GPIO.setmode(GPIO.BOARD)
+    # GPIO.setup(11, GPIO.OUT)
+
+    # # turns on the pin for output
+    # GPIO.output(11, True)
+    # pwm=GPIO.PWM(11, 400)
+
     print("Closing Claw...")
 
-    print("Reseting angle...")
-    # start it with 0 duty cycle so it doesn't set any angles on startup
-    pwm.start(20)
-    sleep(6)
+    # print("Reseting angle...")
+    # # start it with 0 duty cycle so it doesn't set any angles on startup
+    # pwm.start(20)
+    # sleep(6)
 
     try:
         print("set angle to: 90 degrees")
         # sets an duty cycle approximately to 90 degrees
-        duty = 48
-        # turns on the pin for output
-        GPIO.output(11, True)
+        duty = 40
         # changes the duty cycle to match what we calculated
         pwm.ChangeDutyCycle(duty)
         sleep(5)
+    except:
+        print("ERROR: in setting duty cycle")
     finally:
         pwm.stop()
         GPIO.cleanup()
@@ -188,17 +197,24 @@ def claw_open(cur_motor_command, pwm):
     cur_motor_command.trans_v = 0.0
     cur_motor_command.angular_v = 0.0
 
+    # GPIO.setmode(GPIO.BOARD)
+    # GPIO.setup(11, GPIO.OUT)
+
+    # # turns on the pin for output
+    # GPIO.output(11, True)
+    # pwm=GPIO.PWM(11, 400)
+
     print("Opening Claw...")
     
     try:
         print("set angle to: 0 degrees")
         # sets a variable equal to our angle divided by 18 and 2 added
         duty = 20
-        # turns on the pin for output
-        GPIO.output(11, True)
         # changes the duty cycle to match what we calculated
         pwm.ChangeDutyCycle(duty)
         sleep(5)
+    except:
+        print("ERROR: in seeting duty cycle")
     finally:
         pwm.stop()
         GPIO.cleanup()

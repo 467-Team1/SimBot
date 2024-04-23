@@ -33,12 +33,22 @@ def main():
     # The freq is unique to the servo motor
     pwm=GPIO.PWM(11, 400)
 
+    # GPIO -> Output
+    GPIO.output(11, True)
+
+    # Reset to Open
+    pwm.ChangeDutyCycle(20)
+
+    # # Clean Up
+    # pwm.stop()
+    # GPIO.cleanup()
+
     # --- --- Claw initialization End--- --- 
 
     # Raspberry Pi IP address and port
     hostname = socket.gethostname()
     IP = socket.gethostbyname(hostname)
-    server_ip = IP  # Listen on localhost
+    server_ip = '192.168.1.3'  # Listen on localhost
     server_port = 12345  # Choose a port that is not already in use
 
     # Create a TCP/IP socket
@@ -87,7 +97,7 @@ def main():
             # print("Received data:", data)
             if data == "Continue" or data == "Stop" or data == "SpeedUp" or data == "SlowDown":
                 left_hand_gesture = data
-            elif data == "Forward" or data == "Backwards" or data == "TurnRight" or data == "TurnLeft" or data == "ClawOpen" or data == "ClawClose":
+            elif data == "Forward" or data == "Backwards" or data == "TurnRight" or data == "TurnLeft" or data == "Open" or data == "Close":
                 right_hand_gesture = data
             else:
                 None
@@ -127,13 +137,55 @@ def main():
             '''
         elif right_hand_gesture == "Close" and Claw_is_Closed == False:
             current_state = claw_close(cur_motor_command, pwm)
+            try:
+                # Needed to avoid GPIO warnings
+                GPIO.setwarnings(False)
+
+                # We need to name all of the pins, so set the naming mode 
+                # as this sets the names to board mode, which just names the pins 
+                # according to the numbers
+                GPIO.setmode(GPIO.BOARD)
+
+                # we need an output to send our PWM signal on
+                # NOTE: Pin 11 is the GPIO pin and it can be changed
+                GPIO.setup(11, GPIO.OUT)
+                # setup PWM at 400 Hz
+                # The freq is unique to the servo motor
+                pwm=GPIO.PWM(11, 400)
+
+                # GPIO -> Output
+                GPIO.output(11, True)
+            except:
+                print("ERROR: GPIO could not be redefined")
             print("State: ", current_state)
             Claw_is_Closed = True
+            print("Claw Close:", Claw_is_Closed)
         
         elif right_hand_gesture == "Open" and Claw_is_Closed == True:
             current_state = claw_open(cur_motor_command, pwm)
+            try:
+                # Needed to avoid GPIO warnings
+                GPIO.setwarnings(False)
+
+                # We need to name all of the pins, so set the naming mode 
+                # as this sets the names to board mode, which just names the pins 
+                # according to the numbers
+                GPIO.setmode(GPIO.BOARD)
+
+                # we need an output to send our PWM signal on
+                # NOTE: Pin 11 is the GPIO pin and it can be changed
+                GPIO.setup(11, GPIO.OUT)
+                # setup PWM at 400 Hz
+                # The freq is unique to the servo motor
+                pwm=GPIO.PWM(11, 400)
+
+                # GPIO -> Output
+                GPIO.output(11, True)
+            except:
+                print("ERROR: GPIO could not be redefined")
             print("State: ", current_state)
             Claw_is_Closed = False
+            print("Claw Open:", Claw_is_Closed)
 
         # Publish the motor command - [might be worth having cur_motor_command published every single time it changes
         # not sure if this will slow down computation, more than likely, for now just leave it here until further testing]
@@ -141,6 +193,7 @@ def main():
 
         # Sleep for 0.1 seconds
         time.sleep(0.1)
+    
 
 if __name__ == '__main__':
     main()
