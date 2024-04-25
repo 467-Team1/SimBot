@@ -4,7 +4,7 @@ import apriltag
 import cv2
 import numpy as np
 from threading import Lock
-import socket 
+import socket
 
 # Create the Flask app
 app2 = Flask(__name__)
