@@ -1,12 +1,10 @@
 from flask import Flask, Response, render_template, request, jsonify
 import requests
-#from apriltag import Detector
 import apriltag
 import cv2
 import numpy as np
 from threading import Lock
 import socket 
-import math
 
 # Create the Flask app
 app2 = Flask(__name__)
@@ -22,7 +20,7 @@ tags_lock = Lock()
 detected_tags = []
 tracking_tag = None
 
-# Camera parameters
+# Camera parameters - Raspberry Pi Cam V2
 focal_length_x = 547.7837  
 focal_length_y = 547.8070
 principal_point_x = 303.9048  
@@ -56,7 +54,7 @@ def video():
     return Response(get_frames(), mimetype='multipart/x-mixed-replace;boundary=frame')
 
 def get_frames():
-    url = 'http://192.168.1.3:5000/video_feed'  
+    url = 'http://192.168.1.3:5000/video_feed' ### TODO: UPDATE WITH MBOT IP ###
     response = requests.get(url, stream=True)
 
     frame_buffer = b''
@@ -99,19 +97,6 @@ def process_frame(frame):
     with tags_lock:
         if tracking_tag is None:
             detected_tags.clear()
-            # for r in results:
-            #     # print("curr: ", r.tag_id)
-            #     corners = np.array(r.corners, dtype=np.int32)
-            #     cv2.polylines(image, [corners], True, (0, 255, 0), 2)
-            #     tag = {
-            #         'xMin': int(corners[:, 0].min()),
-            #         'yMin': int(corners[:, 1].min()),
-            #         'xMax': int(corners[:, 0].max()),
-            #         'yMax': int(corners[:, 1].max()),
-            #         'id' : r.tag_id,
-                    
-            #     }
-            #     detected_tags.append(tag)
             i = 0
             while (i < len(results)):
                 (ptA, ptB, ptC, ptD)  = results[i].corners
@@ -125,7 +110,7 @@ def process_frame(frame):
 
                 cX = int(results[i].center[0])
                 cY = int(results[i].center[1])
-                distance, angle = get_distance_and_angle(results[i + 1], results[i].center)
+                distance, angle = get_distance_and_angle(results[i + 1])
                 
                 tag = {
                     'xMin': int(corners[:, 0].min()),
@@ -142,12 +127,14 @@ def process_frame(frame):
         else:
             # Handle tracking mode
             i = 0
+            cur_tag_detected = False 
             while (i < len(results)):
                 corners = np.array(results[i].corners, dtype=np.int32)
                 if tracking_tag['id'] == results[i].tag_id:  # Assuming each tag has a unique 'id'
+                    cur_tag_detected = True
                     cv2.polylines(image, [corners], True, (0, 0, 255), 2)
                     # distance = calculate_distance(corners)
-                    distance, angle = get_distance_and_angle(results[i + 1], results[i].center)
+                    distance, angle = get_distance_and_angle(results[i + 1])
                     tracking_tag['corners'] = corners
                     send_tag_data_to_remote_two(angle, distance, results[i + 1])
                     if distance < 0.1:
@@ -157,7 +144,7 @@ def process_frame(frame):
                     if is_tag_head_on(angle):
                         # tag_is_head_on = True
                         send_message('HEAD ON MET')
-                    if distance < 0.1 and is_tag_head_on(angle):
+                    if distance < 0.2 and is_tag_head_on(angle): ### TODO: TUNE ME ###
                         tracking_tag = None  # Stop tracking
                         print("DONE TRACKING TAG")
                         send_tag_done_to_remote()
@@ -165,8 +152,12 @@ def process_frame(frame):
                     else:
                         send_tag_data_to_remote(tracking_tag, distance, angle)
                     break
+            
+            # If the tag is not detected, send a message
+            if (not cur_tag_detected):
+                send_message("Out of Sight")
 
-    ret, buffer = cv2.imencode('.jpg', image)
+    _, buffer = cv2.imencode('.jpg', image)
     return buffer.tobytes()
 
 def calculate_distance(corners):
@@ -184,7 +175,7 @@ def send_tag_data_to_remote_two(angle, distance, pose):
         'distance': distance,
         'headon': head_on,
     }
-    remote_url = 'http://192.168.1.3:5003'
+    remote_url = 'http://192.168.1.3:5003' ### TODO: UPDATE WITH MBOT IP ###
     try:
         # Send the data to the remote server
         requests.post(remote_url, json=data)
@@ -192,41 +183,23 @@ def send_tag_data_to_remote_two(angle, distance, pose):
     except requests.RequestException as e:
         print(f"Error sending tag data to remote: {e}")
 
-def yaw_angle(R, center, distance):
-    # Convert the rotation matrix to euler angles
-    # beta = -np.arcsin(R[2,0]) # equivalent to y axis
-    # gamma =  np.arctan2(R[1,0]/np.cos(beta), R[0,0]/np.cos(beta)) # equivalent to z axis
+def yaw_angle(R):
 
-    #yaw = np.degrees(math.atan2(R[2, 1], R[1, 1]))
-    # yaw = np.degrees(math.atan2(R[0, 2], R[2, 2]))
-    # diff = center[0] - principal_point_x
-    
-    # return (np.degrees(np.arctan2(diff, distance)))
+    # Extract Translational Matrix
+    t_vec = R[:3, 3]
 
-    # # scale = diff / distance
-    # return np.degrees(np.arctan2(diff, distance))
-    return center[0]
+    # Grab Angle from x - z
+    angle = np.arctan2(t_vec[0], t_vec[2])
+    return np.degrees(angle)
 
-def get_distance_and_angle(pose_matrix, center):
-    # # Extract translation vector (first 3 elements of the last column)
-    # translation_vector = pose_matrix[:3, 3]
-    # distance = np.linalg.norm(translation_vector)
-    # rotation_matrix = pose_matrix[:3, :3]
-
-    # euler_angles_rad = np.arccos((np.trace(rotation_matrix) - 1) / 2)
-    # angle_degrees = np.degrees(euler_angles_rad)
-
-    # return distance, angle_degrees
+def get_distance_and_angle(pose_matrix):
 
     # Calculate the Yaw angle
     translation_vector = np.linalg.norm(pose_matrix[0:3, 3])
-    distance = np.linalg.norm(translation_vector)
-    angle = yaw_angle(pose_matrix, center, distance)
+    angle = yaw_angle(pose_matrix)
     
-
     # Calculate the distance
-    
-    
+    distance = np.linalg.norm(translation_vector)
 
     return distance, angle
 
@@ -249,7 +222,7 @@ def send_message(message):
     data = {
         'status': message
     }
-    remote_url = 'http://192.168.1.3:5003'
+    remote_url = 'http://192.168.1.3:5003' ### TODO: UPDATE WITH MBOT IP ###
     try:
         requests.post(remote_url, json=data)
     except requests.RequestException as e:
@@ -270,7 +243,8 @@ def send_tag_data_to_remote(tag, distance, angle):
         'distance': distance,
         'headon': head_on,
     }
-    remote_url = 'http://192.168.1.3:5003'
+    remote_url = 'http://192.168.1.3:5003' ### TODO: UPDATE WITH MBOT IP ###
+
     try:
         requests.post(remote_url, json=data)
     except requests.RequestException as e:
@@ -281,7 +255,7 @@ def send_tag_done_to_remote():
     data = {
         'status': 'DONE'
     }
-    remote_url = 'http://192.168.1.3:5003'
+    remote_url = 'http://192.168.1.3:5003' ### TODO: UPDATE WITH MBOT IP ###
     try:
         requests.post(remote_url, json=data)
     except requests.RequestException as e:
