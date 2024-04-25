@@ -38,7 +38,7 @@ In Terminal 1 (Mbot):
   ```
 - Run the following command:
   ```bash
-  python3 camerafinal.py
+  python3 camera_final.py
   ```
 
 In Terminal 2 (Locally):
