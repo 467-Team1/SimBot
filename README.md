@@ -18,22 +18,11 @@
 - scikit-learn 0.23.2 or Later (Only if you want to display the confusion matrix)
 - matplotlib 3.3.2 or Later (Only if you want to display the confusion matrix)
 #### April Tag
-- Please Referance `april_tag/README.md`
-
-## Hand Gesture Model
-
-### Setup and Usage
-
-1. Open 1 terminal - **Locally**
-
-In Terminal 1:
-- Navigate to the `hand_gesture_recognition_mediapipe_main/` directory:
- ```bash
-  cd hand_gesture_recognition_mediapipe_main/
-  ```
-- Run the following command:
+- AprilTag repo is not specifically in the repository, you will need to clone it locally to your machine (This is due to dependancies in CMake that are specific to your machine)
+- Please Refer to `april_tag/README.md` for details
+- Add `templates/` directory & `receive_stream.py` from the `support_files` directory to the `AprilTag/scripts/` directory
   ```bash
-  python3 app.py
+  cp -r support_files/ AprilTag/scripts/
   ```
 
 ## April Tag Recognition
@@ -52,17 +41,7 @@ In Terminal 1 (Mbot):
   python3 camerafinal.py
   ```
 
-In Terminal 2 (Mbot):
-- Navigate to the `camera_stream/` directory:
-  ```bash
-  cd camera_stream
-  ```
-- Run the following command:
-  ```bash
-  python3 object_alignment.py
-  ```
-
-In Terminal 3 (Locally):
+In Terminal 2 (Locally):
 - Navigate to the `april_tag/scripts/` directory:
   ```bash
   cd april_tag/scripts/
@@ -72,26 +51,25 @@ In Terminal 3 (Locally):
   python3 receive_stream.py
   ```
 
+In Terminal 3 (Mbot):
+- Navigate to the `teleop_gesture/python/` directory:
+  ```bash
+  cd teleop_gesture/python/
+  ```
+- Run the following command:
+  ```bash
+  python3 data_delivery.py
+  ```
+
 ## Teleop Gesture
 
 ### Setup and Usage
 
 1. Reflash the `*.uf2` file into Mbot.
 
-2. Open three separate terminals - **MBot**
+2. Open three separate terminals - **3 MBot**
 
-In Terminal 1:
-- Navigate to the `teleop_gesture/python/` directory:
-  ```bash
-  cd teleop_gesture/python/
-  ```
-- Write the following command, but do not run it yet:
-  ```bash
-  python3 teleop_gesture_v#.py
-  ```
-  (Replace # with the appropriate version number)
-
-In Terminal 2:
+In Terminal 1 (Mbot):
 - Navigate to the `teleop_gesture/shim_timesync_binaries/` directory:
   ```bash
   cd teleop_gesture/shim_timesync_binaries/
@@ -100,20 +78,31 @@ In Terminal 2:
   ```bash
   chmod +x ./shim
   ```
-- Write the following command, but do not run it yet:
+- Run the following command:
   ```bash
   ./shim
   ```
 
-In Terminal 3:
+In Terminal 2 (Mbot):
 - Navigate to the `teleop_gesture/shim_timesync_binaries/` directory:
   ```bash
   cd teleop_gesture/shim_timesync_binaries/
   ```
-- Write the following command, but do not run it yet:
+- Run the following command:
   ```bash
   ./timesync
   ```
+
+In Terminal 3 (Mbot):
+- Navigate to the `teleop_gesture/python/` directory:
+  ```bash
+  cd teleop_gesture/python/
+  ```
+- Run the following command:
+  ```bash
+  python3 teleop_gesture_v#.py
+  ```
+  (Replace # with the appropriate version number)
 
 3. Run the commands in the following order:
     - Terminal 1
@@ -122,15 +111,36 @@ In Terminal 3:
 
 Ensure that the terminals are running in the background to maintain the teleoperation functionality.
 
+## Hand Gesture Model
+
+### Setup and Usage
+
+1. Open 1 terminal - **1 Locally**
+
+In Terminal 1 (Locally):
+- Navigate to the `hand_gesture_recognition_mediapipe_main/` directory:
+ ```bash
+  cd hand_gesture_recognition_mediapipe_main/
+  ```
+- Run the following command:
+  ```bash
+  python3 app.py
+  ```
+
 ## Note
 - Replace `teleop_gesture_v#.py` with the appropriate version of the Python script.
 - Make sure to follow the order of commands as mentioned above for proper execution.
 - **Locally** means to open terminals on your local computer, *NOT* on the Mbot's Raspberry Pi
+- The following require that you update the IP address from the Mbot ```ifconfig``` use the wlan0 IP address:
+  - camerafinal.py; line 26
+  - app.py; line 47
+  - teleop_gesture_v3.py; line 42
+  - receive_stream.py; line 57, 178, 225, 246, & 258 (leave the port as is i.e. 'http://[INSERT IP HERE]:5003')
 
 ## Useful Commands
 ### To allow UI's to show up on VNC Viewer
 ```bash
-ssh -X pi@[insert IP Address here]
+ssh -X pi@[insert Mbot IP Address here]
 ```
 once in the Raspberry Pi, run this command:
 ```bash
