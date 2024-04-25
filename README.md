@@ -76,7 +76,7 @@ In Terminal 1 (Mbot):
   ```
 - Give the `shim` file permission to execute:
   ```bash
-  chmod +x ./shim
+  chmod +x shim
   ```
 - Run the following command:
   ```bash
