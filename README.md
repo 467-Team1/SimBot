@@ -147,6 +147,11 @@ once in the Raspberry Pi, run this command:
 export DISPLAY=:0.0
 ```
 
+### To link receive_stream.py; allowing changes in your personal cloned AprilTag's receive_stream.py to support/receive_stream.py
+```bash
+ln AprilTag/scripts/receive_stream.py support_files/receive_stream.py
+```
+
 ## References
 - [hand-gesture-recognition-using-mediapipe](https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe.git)
 - [AprilTag](https://github.com/Tinker-Twins/AprilTag.git)
