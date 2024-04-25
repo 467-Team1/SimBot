@@ -151,6 +151,7 @@ export DISPLAY=:0.0
 ```bash
 ln AprilTag/scripts/receive_stream.py support_files/receive_stream.py
 ```
+You might need to move support_files/receive_stream.py out of the it's directory momentarily for this to work (after you added a copy into AprilTag/scripts)
 
 ## References
 - [hand-gesture-recognition-using-mediapipe](https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe.git)
