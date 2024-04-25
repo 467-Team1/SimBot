@@ -38,7 +38,7 @@ In Terminal 1 (Mbot):
   ```
 - Run the following command:
   ```bash
-  python3 camerafinal.py
+  python3 camera_final.py
   ```
 
 In Terminal 2 (Locally):
@@ -76,7 +76,7 @@ In Terminal 1 (Mbot):
   ```
 - Give the `shim` file permission to execute:
   ```bash
-  chmod +x ./shim
+  chmod +x shim
   ```
 - Run the following command:
   ```bash
@@ -135,7 +135,7 @@ In Terminal 1 (Locally):
   - camerafinal.py; line 26
   - app.py; line 47
   - teleop_gesture_v3.py; line 42
-  - receive_stream.py; line 57, 178, 225, 246, & 258 (leave the port as is i.e. 'http://[INSERT IP HERE]:5003')
+  - receive_stream.py; line 57, 178, 225, 246, & 258 (leave the port as is i.e. 'http://[INSERT IP HERE]:5003'
 
 ## Useful Commands
 ### To allow UI's to show up on VNC Viewer
