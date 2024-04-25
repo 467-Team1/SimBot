@@ -1,6 +1,9 @@
 # State Packages
 from enum import Enum
+from flask import Flask, app, jsonify
 import numpy as np
+from lcmtypes import mbot_motor_command_t
+import time
 
 # Claw Packages
 import RPi.GPIO as GPIO
@@ -13,39 +16,151 @@ class State(Enum):
     RIGHT = 4
     CLAW_OPEN = 5
     CLAW_CLOSE = 6
-    STAND_BY = 7
+    AUTO = 7
+    STAND_BY = 8
+
+### AUTONOMOUS FUNCTIONS ###
+def distance_alignment(cur_motor_command):
+    cur_motor_command.angular_v = 0.0
+    cur_motor_command.trans_v = 0.0
+
+    variables = []
+    distance = 0.0
+    
+    time.sleep(0.2)
+
+    # Pull for the first time
+    with open('data.txt','r') as file:
+        # find all 3 variables
+        for line in file:
+            variables = line.strip().split()
+        
+        if len(variables) < 2:
+            return State.AUTO
+
+        distance = float(variables[1])
+
+    print("Distance: ", str(distance))
+
+    ## WORKING CODE ##
+    if (distance > 0.2): ### TODO: TUNE ME ###
+        cur_motor_command.trans_v = 0.2 ### TODO: TUNE ME ###
+
+    '''INSERT CONTROLLER CODE HERE'''
+
+    return State.AUTO
+
+
+def angle_alignment(cur_motor_command):
+
+    cur_motor_command.angular_v = 0.0
+    cur_motor_command.trans_v = 0.0
+
+    variables = []
+    angle = 0.0
+    distance = 0.0
+    
+    time.sleep(0.2)
+
+    # Pull for the first time
+    with open('data.txt','r') as file:
+        # find all 3 variables
+        for line in file:
+            variables = line.strip().split()
+        
+        if len(variables) < 2:
+            return State.AUTO
+
+        angle = float(variables[0])
+        distance = float(variables[1])
+
+    print("Angle: ", str(angle))
+
+    ## WORKING CODE ##
+    if angle < -0.1: ### TODO: TUNE ME ###
+        cur_motor_command.angular_v = 1.0 ### TODO: TUNE ME ###
+    elif angle > 0.1: ### TODO: TUNE ME ###
+        cur_motor_command.angular_v = -1.0 ### TODO: TUNE ME ###
+
+    ### CONTROLLER WORK IN PROGRESS ###
+
+    '''
+    if (distance >= 0.6):
+        if angle < -0.1:
+            cur_motor_command.angular_v = 1.0
+        elif angle > 0.1:
+            cur_motor_command.angular_v = -1.0
+    else:
+        if angle < -0.1:
+            cur_motor_command.angular_v = distance * 1.0 + 0.3
+        elif angle > 0.1:
+            cur_motor_command.angular_v = -1 * (distance * 1.0 + 0.3)
+
+    # Big Angle Changes
+    # if distance >= 0.4:
+    #     if angle < -0.1:
+    #         cur_motor_command.angular_v = 1.0
+    #     elif angle > 0.1:
+    #         cur_motor_command.angular_v = -1.0
+
+    # # Small Angle Changes
+    # elif distance < 0.4:
+    #     if angle < -0.1:
+    #         cur_motor_command.angular_v = 0.5
+    #     elif angle > 0.1:
+    #         cur_motor_command.angular_v = -0.5
+    '''
+
+    return State.AUTO
+    
 
 ### VELOCITY CHANGE FUNCTIONS ### 
 
 # Slow Down - decelerates to 0.05 m/s, 0.05 rad/s or -0.05 m/s, -0.05 rad/s
 def slow_down(cur_motor_command, current_state):
     step = 0.02
-    trans_speed_cap = 0.20
+    trans_speed_min = 0.1
+    angl_speed_min = 0.1
 
     print("Decelerating...from", current_state)
     # # Decrease the speed until it reaches 0.2 m/s
     if current_state == State.FORWARD:
         # Check if the robot is the robot reached the minimum speed
         cur_motor_command.trans_v -= step
-        if cur_motor_command.trans_v <= trans_speed_cap:
-            cur_motor_command.trans_v = trans_speed_cap
+        if cur_motor_command.trans_v <= trans_speed_min:
+            cur_motor_command.trans_v = trans_speed_min
 
     # # Increase the speed until it reaches -0.2 m/s
     elif current_state == State.BACKWARD:
         cur_motor_command.trans_v += step
         # Check if the robot is the robot reached the minimum speed
-        if cur_motor_command.trans_v >= -1*trans_speed_cap:
-            cur_motor_command.trans_v = -1*trans_speed_cap
+        if cur_motor_command.trans_v >= -1*trans_speed_min:
+            cur_motor_command.trans_v = -1*trans_speed_min
+
+    elif current_state == State.RIGHT:
+        cur_motor_command.angular_v += step
+        # Check if the robot is the robot reached the maximum speed
+        if cur_motor_command.angular_v >= -1*angl_speed_min:
+            cur_motor_command.angular_v = -1*angl_speed_min
+
+    elif current_state == State.LEFT:
+        cur_motor_command.angular_v -= step
+        # Check if the robot is the robot reached the maximum speed
+        if cur_motor_command.angular_v <= angl_speed_min:
+            cur_motor_command.angular_v = angl_speed_min
+
+    return
 
 # Speed Up - accelerates to 0.5 m/s, 1.0 rad/s or -0.5 m/s, -1.0 rad/s
 def speed_up(cur_motor_command, current_state):
     step = 0.02
-    trans_speed_cap = 0.40
+    trans_speed_cap = 0.60
+    angl_speed_cap = 5.0
 
     print("Accelerating...from", current_state)
     # # Increase the speed until it reaches 0.4 m/s
     if current_state == State.FORWARD:
-        # Check if the robot is the robot reached the minimum speed
+        # Check if the robot is the robot reached the maximum speed
         cur_motor_command.trans_v += step
         if cur_motor_command.trans_v >= trans_speed_cap:
             cur_motor_command.trans_v = trans_speed_cap
@@ -53,15 +168,31 @@ def speed_up(cur_motor_command, current_state):
     # Increase the speed until it reaches -0.4 m/s
     elif current_state == State.BACKWARD:
         cur_motor_command.trans_v -= step
-        # Check if the robot is the robot reached the minimum speed
+        # Check if the robot is the robot reached the maximum speed
         if cur_motor_command.trans_v <= -1*trans_speed_cap:
             cur_motor_command.trans_v = -1*trans_speed_cap
+
+    elif current_state == State.RIGHT:
+        cur_motor_command.angular_v -= step
+        # Check if the robot is the robot reached the maximum speed
+        if cur_motor_command.angular_v <= -1*angl_speed_cap:
+            cur_motor_command.angular_v = -1*angl_speed_cap
+
+    elif current_state == State.LEFT:
+        cur_motor_command.angular_v += step
+        # Check if the robot is the robot reached the maximum speed
+        if cur_motor_command.angular_v >= angl_speed_cap:
+            cur_motor_command.angular_v = angl_speed_cap
+
+    return
 
 # Stop - decelerates to 0.0 m/s, 0.0 rad/s
 def stop(cur_motor_command):
     print("Stopping...")
     cur_motor_command.trans_v = 0.0
     cur_motor_command.angular_v = 0.0
+
+    return
 
 ### DIRECTONAL FUNCTIONS ###
 
@@ -87,10 +218,12 @@ def forward(cur_motor_command, left_hand_gesture):
         for step in np.linspace(0, 0.25, 10):
             print("Getting to Speed...")
             cur_motor_command.trans_v = step
+    
+    return State.FORWARD
 
 # Going Backward - climbs down to -0.25 m/s or stays at -0.25 m/s
 def backward(cur_motor_command, left_hand_gesture):
-     
+    
     # Zero Out Angular Velocity
     cur_motor_command.angular_v = 0.0
 
@@ -110,6 +243,8 @@ def backward(cur_motor_command, left_hand_gesture):
         for step in np.linspace(0, 0.25, 10):
             cur_motor_command.trans_v = -step
 
+    return State.BACKWARD
+
 # Going Left - turns left at 0.5 rad/s
 def left(cur_motor_command, left_hand_gesture):
 
@@ -127,10 +262,15 @@ def left(cur_motor_command, left_hand_gesture):
         # Check if the robot is already turning left
         if cur_motor_command.angular_v > 0.0:
             return State.LEFT
+        
+        if cur_motor_command.angular_v < 0.0:
+            cur_motor_command.angular_v = 0
 
         # Slowly Decelerate to 0.0 m/s - Change '10' to 'Value > 10' to control the speed of deceleration
-        for step in np.linspace(0, 0.5, 10):
+        for step in np.linspace(0, 0.3, 10):
             cur_motor_command.angular_v += step
+
+    return State.LEFT
 
 # Going Right - turns right at -0.5 rad/s
 def right(cur_motor_command, left_hand_gesture):
@@ -149,11 +289,15 @@ def right(cur_motor_command, left_hand_gesture):
         # Check if the robot is already turning right
         if cur_motor_command.angular_v < 0.0:
             return State.RIGHT
+        
+        if cur_motor_command.angular_v > 0.0:
+            cur_motor_command.angular_v = 0
 
         # Slowly Decelerate to 0.0 m/s - Change '10' to 'Value > 10' to control the speed of deceleration
-        for step in np.linspace(0, 0.5, 10):
+        for step in np.linspace(0, 0.3, 10):
             cur_motor_command.angular_v -= step
 
+    return State.RIGHT
 
 ### CLAW FUNCTIONS ###
 
@@ -182,4 +326,3 @@ def claw_open(cur_motor_command, pwm):
     pwm.ChangeDutyCycle(20)
 
     return State.CLAW_OPEN
-
