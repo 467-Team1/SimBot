@@ -130,52 +130,52 @@ In Terminal 1 (Locally):
   python3 app.py
   ```
 
-  ## SLAM
-  1. Ensure that the LIDAR is plugged in and turned on
+## SLAM
+1. Ensure that the LIDAR is plugged in and turned on
 
-  2. Open three separate terminals - **3 MBot**
+2. Open three separate terminals - **3 MBot**
 
-  In Terminal 1 (Mbot):
-  - Navigate to the `bot_lab/bin/` directory:
-  ```bash
-  cd bot_lab/bin/
-  ```
+In Terminal 1 (Mbot):
+- Navigate to the `bot_lab/bin/` directory:
+```bash
+cd bot_lab/bin/
+```
 
-  - Run the following command:
-  ```bash
-  ./rplidar_driver
-  ```
+- Run the following command:
+```bash
+./rplidar_driver
+```
 
-  In Terminal 2 (Mbot):
-  - Navigate to the `bot_lab/bin/` directory:
-  ```bash
-  cd bot_lab/bin/
-  ```
+In Terminal 2 (Mbot):
+- Navigate to the `bot_lab/bin/` directory:
+```bash
+cd bot_lab/bin/
+```
 
-  - Run the following command:
-  ```bash
-  ./slam
-  ```
+- Run the following command:
+```bash
+./slam
+```
 
-  - Navigate to the `bot_lab/` directory:
-  ```bash
-  cd bot_lab/
-  ```
+- Navigate to the `bot_lab/` directory:
+```bash
+cd bot_lab/
+```
 
-  - Run the following command:
-  ```bash
-  source setenv.sh
-  ```
+- Run the following command:
+```bash
+source setenv.sh
+```
 
-  - Navigate to the `bin/` directory:
-  ```bash
-  cd bin/
-  ```
+- Navigate to the `bin/` directory:
+```bash
+cd bin/
+```
 
-  - Run the following command: [Link to "To allow UI's to show up on VNC Viewer"](#vnc-ui)
-  ```bash
-  ./botgui
-  ```
+- Run the following command: [Link to "To allow UI's to show up on VNC Viewer"](#vnc-ui)
+```bash
+./botgui
+```
 
 ## Note
 - Replace `teleop_gesture_v#.py` with the appropriate version of the Python script.
