@@ -28,6 +28,8 @@
 ## Demo of Final Project
 [![Video Label]](https://youtu.be/FMWMjoAIFdI)
 
+<iframe width="560" height="315" src="https://youtu.be/FMWMjoAIFdI" frameborder="0" allowfullscreen></iframe>
+
 ## April Tag Recognition
 
 ### Setup and Usage
