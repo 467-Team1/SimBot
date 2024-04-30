@@ -1,0 +1,7 @@
+
+struct april_tag_t {
+    int32_t   id;       // AprilTag identifier
+    float     x;        // Position in x
+    float     y;        // Position in y
+
+}

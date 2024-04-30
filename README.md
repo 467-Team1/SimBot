@@ -25,6 +25,11 @@
   cp -r support_files/ AprilTag/scripts/
   ```
 
+## Demo of Final Project
+<video width="320" height="240" controls>
+  <source src="demo/demo.mp4" type="video/mp4">
+</video>
+
 ## April Tag Recognition
 
 ### Setup and Usage
@@ -127,6 +132,53 @@ In Terminal 1 (Locally):
   python3 app.py
   ```
 
+  ## SLAM
+  1. Ensure that the LIDAR is plugged in and turned on
+
+  2. Open three separate terminals - **3 MBot**
+
+  In Terminal 1 (Mbot):
+  - Navigate to the `bot_lab/bin/` directory:
+  ```bash
+  cd bot_lab/bin/
+  ```
+
+  - Run the following command:
+  ```bash
+  ./rplidar_driver
+  ```
+
+  In Terminal 2 (Mbot):
+  - Navigate to the `bot_lab/bin/` directory:
+  ```bash
+  cd bot_lab/bin/
+  ```
+
+  - Run the following command:
+  ```bash
+  ./slam
+  ```
+
+  - Navigate to the `bot_lab/` directory:
+  ```bash
+  cd bot_lab/
+  ```
+
+  - Run the following command:
+  ```bash
+  source setenv.sh
+  ```
+
+  - Navigate to the `bin/` directory:
+  ```bash
+  cd bin/
+  ```
+
+  - Run the following command: [Link to "To allow UI's to show up on VNC Viewer"](#vnc-ui)
+  ```bash
+  ./botgui
+  ```
+
 ## Note
 - Replace `teleop_gesture_v#.py` with the appropriate version of the Python script.
 - Make sure to follow the order of commands as mentioned above for proper execution.
@@ -138,7 +190,7 @@ In Terminal 1 (Locally):
   - receive_stream.py; line 31
 
 ## Useful Commands
-### To allow UI's to show up on VNC Viewer
+### To allow UI's to show up on VNC Viewer {#vnc-ui}
 ```bash
 ssh -X pi@[insert Mbot IP Address here]
 ```

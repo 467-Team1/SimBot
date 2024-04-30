@@ -14,3 +14,5 @@ from .pose_xyt_t import pose_xyt_t
 from .reset_odometry_t import reset_odometry_t
 from .robot_path_t import robot_path_t
 from .timestamp_t import timestamp_t
+from .april_tag_data_t import april_tag_data_t
+from .april_tag_t import april_tag_t

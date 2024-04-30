@@ -1,0 +1,5 @@
+struct april_tag_data_t {
+    int32_t   id;       // AprilTag identifier
+    float     dist;        // Distance
+    float     angle;    //Angle in reference AprilTag
+}

@@ -1,5 +1,13 @@
 from flask import Flask, request, jsonify
+import lcm
+import time
+import random
+from lcmtypes import april_tag_data_t
 
+APRILTAG_CHANNEL = "APRIL_TAG"
+
+# Initialize LCM
+lc = lcm.LCM('udpm://239.255.76.67:7667?ttl=2')
 
 app = Flask(__name__)
 
@@ -9,8 +17,24 @@ def data_deliver():
 
     if data.get('status') == 'DONE' or data.get('status') == "Out of Sight":
         print('DONE TRACKING TAG')
-        with open('data.txt','w'):
-            pass
+        with open('data.txt','w') as file:
+            file.write("!")
+
+    elif (data.get('log') == 'Log'):
+        print('DONE DOUBLE')
+        print("log_Distance:", data.get('distance'))
+        print("log_Angle:", data.get('angle'))
+        print("log_Id:", data.get('id'))
+        
+        tag_data = april_tag_data_t()
+        tag_data.dist = data.get('distance')
+        tag_data.id = data.get('id')
+        tag_data.angle = data.get('angle')
+        
+        lc.publish(APRILTAG_CHANNEL, tag_data.encode())
+
+        time.sleep(1)
+
     else:
         # Assuming the data includes 'corners' and 'distance' as sent by your application
         angle = data.get('angle')
@@ -22,8 +46,13 @@ def data_deliver():
             print("Nonetype received...")
             return jsonify({'status': 'success'}), 200
 
-        with open('data.txt','w') as file:
-            file.write(str(angle) + " " + str(distance))
+        if (data.get('log') == 'log'):
+            #double click
+            with open('data.txt','w') as file:
+                file.write(str(angle) + " " + str(distance) + " " + str(id) + " " + "log")
+        else:
+            with open('data.txt','w') as file:
+                file.write(str(angle) + " " + str(distance))
     
     # Return a success response
     return jsonify({'status': 'success'}), 200

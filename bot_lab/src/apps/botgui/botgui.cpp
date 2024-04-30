@@ -204,6 +204,7 @@ void BotGui::onDisplayStart(vx_display_t* display)
     lcmInstance_->subscribe(".*_POSE", &BotGui::handlePose, this);  // NOTE: Subscribe to ALL _POSE channels!
     lcmInstance_->subscribe(".*ODOMETRY", &BotGui::handleOdometry, this); // NOTE: Subscribe to all channels with odometry in the name
     lcmInstance_->subscribe(EXPLORATION_STATUS_CHANNEL, &BotGui::handleExplorationStatus, this);
+    lcmInstance_->subscribe(BOTLAB_APRIL_CHANNEL, &BotGui::handleAprilTag, this);
 }
 
 
@@ -299,8 +300,34 @@ void BotGui::render(void)
     resetExplorationStatusIfRequested();
     updateGridStatusBarText();
     gdk_threads_leave();    // no more modifications to the window are happening, so unlock
+
+    vx_buffer_t* tagBuf = vx_world_get_buffer(world_, "aprilTags");
+    for (const auto& tag : aprilTags_)
+    {
+        draw_apriltag(tag.second, tagBuf);
+    }
+    vx_buffer_swap(tagBuf);
 }
 
+void BotGui::handleAprilTag(const lcm::ReceiveBuffer* rbuf, 
+                                 const std::string& channel, 
+                                 const april_tag_t* tag)
+{
+    std::lock_guard<std::mutex> autoLock(vxLock_);
+    // aprilTags_.push_back(*tag);
+    auto it = aprilTags_.find(tag->id);
+    if (it == aprilTags_.end()){
+        aprilTags_.insert({tag->id, *tag});
+
+    }
+    else{
+        aprilTags_[tag->id] = *tag;
+        
+        
+    }
+    std::cout << aprilTags_[tag->id].x << " " << aprilTags_[tag->id].y << std::endl;
+    
+}
 
 void BotGui::handleOccupancyGrid(const lcm::ReceiveBuffer* rbuf, 
                                  const std::string& channel, 

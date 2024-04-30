@@ -61,7 +61,7 @@ def main():
     # --- --- Socket initialization End --- --- 
 
     # Default settings are Stop and Forward
-    left_hand_gesture= "Stop"
+    left_hand_gesture = "Stop"
     right_hand_gesture = "Forward"
 
     #  --- --- Clear data.txt so no remaining values exist --- --- 
@@ -105,31 +105,51 @@ def main():
 
         # --- --- State Machine --- --- 
         print("CURRENT STATE: ", current_state)
-        # --- --- Autonomous --- --- 
+                
+        # Check the data.txt file size - run autonomous
+        if os.stat("data.txt").st_size == 1:
+            current_state = State.COLLECT
+            with open('data.txt','w'):
+                pass
 
-        # Check if the data.txt file is not empty
-        if os.stat("data.txt").st_size != 0:
+        elif os.stat("data.txt").st_size > 1:
             # This means we have clicked the april tag
             ### WHEN IN AUTO PLEASE BLINK YOUR LEFT HAND IN GESTURE CAMERA ###
             print("AUTO MODE ON")
             current_state = State.AUTO
-        
+
         else:
-            current_state = claw_open(cur_motor_command, pwm)
-            current_state = claw_close(cur_motor_command, pwm)
+            print("No Data Available")
             current_state = State.STAND_BY
 
-
+        # --- --- Autonomous --- --- 
         if current_state == State.AUTO:
             # Run the entire autonomous part of picking up the object
             # We will only be at this point if we have clicked on an april tag
             if angle_distance_flipper:
+                print("ANGLE ALIGNING")
                 current_state = angle_alignment(cur_motor_command)
                 angle_distance_flipper = False
             
             else:
+                print("MOVING CLOSER")
                 current_state = distance_alignment(cur_motor_command)
                 angle_distance_flipper = True
+
+        if current_state == State.COLLECT:
+            print("COLLECTING...")
+            time.sleep(3.0)
+            current_state = claw_open(cur_motor_command, pwm)
+
+            print("MOVING CLOSER...")
+            cur_motor_command.trans_v = 0.1
+            lc.publish("MBOT_MOTOR_COMMAND", cur_motor_command.encode())
+            time.sleep(0.5)
+            
+            current_state = claw_close(cur_motor_command, pwm)
+            Claw_is_Closed = False
+            lc.publish("MBOT_MOTOR_COMMAND", cur_motor_command.encode())
+            time.sleep(0.1)
 
         # --- --- Right Hand --- --- 
 

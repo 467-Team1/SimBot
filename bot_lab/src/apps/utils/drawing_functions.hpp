@@ -12,6 +12,8 @@ class pose_xyt_t;
 class lidar_t;
 class robot_path_t;
 struct frontier_t;
+class april_tag_data_t;
+class april_tag_t;
 
 
 /**
@@ -110,6 +112,6 @@ void draw_frontiers(const std::vector<frontier_t>& frontiers,
                     const float* color, 
                     vx_buffer_t* buffer);
 
-
+void draw_apriltag(const april_tag_t& tag, vx_buffer_t* buf);
 
 #endif // APPS_UTILS_DRAWING_FUNCTIONS_HPP

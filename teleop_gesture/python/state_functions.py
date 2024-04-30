@@ -18,16 +18,15 @@ class State(Enum):
     CLAW_CLOSE = 6
     AUTO = 7
     STAND_BY = 8
+    COLLECT = 9
 
 ### AUTONOMOUS FUNCTIONS ###
 def distance_alignment(cur_motor_command):
-    cur_motor_command.angular_v = 0.0
-    cur_motor_command.trans_v = 0.0
 
     variables = []
     distance = 0.0
     
-    time.sleep(0.2)
+    time.sleep(0.1)
 
     # Pull for the first time
     with open('data.txt','r') as file:
@@ -35,6 +34,7 @@ def distance_alignment(cur_motor_command):
         for line in file:
             variables = line.strip().split()
         
+        # data.txt is Empty
         if len(variables) < 2:
             return State.AUTO
 
@@ -43,8 +43,10 @@ def distance_alignment(cur_motor_command):
     print("Distance: ", str(distance))
 
     ## WORKING CODE ##
-    if (distance > 0.2): ### TODO: TUNE ME ###
-        cur_motor_command.trans_v = 0.2 ### TODO: TUNE ME ###
+    if (distance > 0.1): ### TODO: TUNE ME ###
+        cur_motor_command.trans_v = 0.1 * distance
+    elif distance == None:
+        return State.AUTO
 
     '''INSERT CONTROLLER CODE HERE'''
 
@@ -52,15 +54,11 @@ def distance_alignment(cur_motor_command):
 
 
 def angle_alignment(cur_motor_command):
-
-    cur_motor_command.angular_v = 0.0
-    cur_motor_command.trans_v = 0.0
-
     variables = []
     angle = 0.0
     distance = 0.0
     
-    time.sleep(1.0)
+    time.sleep(0.1)
 
     # Pull for the first time
     with open('data.txt','r') as file:
@@ -68,6 +66,7 @@ def angle_alignment(cur_motor_command):
         for line in file:
             variables = line.strip().split()
         
+        # data.txt is Empty
         if len(variables) < 2:
             return State.AUTO
 
@@ -76,41 +75,20 @@ def angle_alignment(cur_motor_command):
 
     print("Angle: ", str(angle))
 
+    if angle == None:
+        return State.AUTO
+
     ## WORKING CODE ##
-    if angle < -0.1: ### TODO: TUNE ME ###
-        cur_motor_command.angular_v = 0.2 ### TODO: TUNE ME ###
-    elif angle > 0.1: ### TODO: TUNE ME ###
-        cur_motor_command.angular_v = -0.2 ### TODO: TUNE ME ###
+    if angle < -7: ### TODO: TUNE ME ###
+        # cur_motor_command.angular_v = 0.25 ### TODO: TUNE ME ###
+        cur_motor_command.angular_v = 0.2 * distance
+    elif angle > 7: ### TODO: TUNE ME ###
+        # cur_motor_command.angular_v = -0.25 ### TODO: TUNE ME ###
+        cur_motor_command.angular_v = -0.2 * distance
+    else:
+        cur_motor_command.angular_v = 0.0
 
     ### CONTROLLER WORK IN PROGRESS ###
-
-    '''
-    if (distance >= 0.6):
-        if angle < -0.1:
-            cur_motor_command.angular_v = 1.0
-        elif angle > 0.1:
-            cur_motor_command.angular_v = -1.0
-    else:
-        if angle < -0.1:
-            cur_motor_command.angular_v = distance * 1.0 + 0.3
-        elif angle > 0.1:
-            cur_motor_command.angular_v = -1 * (distance * 1.0 + 0.3)
-
-    # Big Angle Changes
-    # if distance >= 0.4:
-    #     if angle < -0.1:
-    #         cur_motor_command.angular_v = 1.0
-    #     elif angle > 0.1:
-    #         cur_motor_command.angular_v = -1.0
-
-    # # Small Angle Changes
-    # elif distance < 0.4:
-    #     if angle < -0.1:
-    #         cur_motor_command.angular_v = 0.5
-    #     elif angle > 0.1:
-    #         cur_motor_command.angular_v = -0.5
-    '''
-
     return State.AUTO
     
 
@@ -215,7 +193,7 @@ def forward(cur_motor_command, left_hand_gesture):
             return State.FORWARD
 
         # Slowly Accelrate to 0.25 m/s - Change '10' to 'Value > 10' to control the speed of acceleration
-        for step in np.linspace(0, 0.25, 10):
+        for step in np.linspace(0, 0.15, 10):
             print("Getting to Speed...")
             cur_motor_command.trans_v = step
     
@@ -240,7 +218,7 @@ def backward(cur_motor_command, left_hand_gesture):
             return State.BACKWARD
         
         # Slowly Decelerate to -0.25 m/s - Change '10' to 'Value > 10' to control the speed of deceleration
-        for step in np.linspace(0, 0.25, 10):
+        for step in np.linspace(0, 0.15, 10):
             cur_motor_command.trans_v = -step
 
     return State.BACKWARD
@@ -322,7 +300,7 @@ def claw_open(cur_motor_command, pwm):
     cur_motor_command.angular_v = 0.0
 
     # Close Claw
-    print("Closing Claw...")
+    print("Opening Claw...")
     pwm.ChangeDutyCycle(20)
 
     return State.CLAW_OPEN

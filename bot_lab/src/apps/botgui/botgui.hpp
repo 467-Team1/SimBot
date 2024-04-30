@@ -19,6 +19,8 @@
 #include <map>
 #include <mutex>
 #include <string>
+#include <lcmtypes/april_tag_data_t.hpp>
+#include <lcmtypes/april_tag_t.hpp>
 
 
 /**
@@ -69,6 +71,7 @@ public:
     void handleExplorationStatus(const lcm::ReceiveBuffer* rbuf, 
                                  const std::string& channel, 
                                  const exploration_status_t* status);
+    void handleAprilTag(const lcm::ReceiveBuffer* rbuf, const std::string& channel, const april_tag_t* msg);
 
 private:
     
@@ -140,6 +143,8 @@ private:
     // VxGtkWindowBase interface -- GUI construction
     void createGuiLayout(GtkWidget* window, GtkWidget* vxCanvas);// override;
     
+    //std::vector<april_tag_t> aprilTags_; 
+    std::map<int, april_tag_t> aprilTags_; 
 };
 
 #endif // APPS_BOTGUI_BOTGUI_HPP

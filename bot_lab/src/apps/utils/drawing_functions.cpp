@@ -8,6 +8,8 @@
 #include <planning/frontiers.hpp>
 #include <planning/obstacle_distance_grid.hpp>
 #include <slam/occupancy_grid.hpp>
+#include <lcmtypes/april_tag_data_t.hpp>
+#include <lcmtypes/april_tag_t.hpp>
 
 // Headers to remove for stencil version
 #include <imagesource/image_u8.h>
@@ -234,4 +236,38 @@ void draw_frontiers(const std::vector<frontier_t>& frontiers,
                                                  vxo_box(vxo_mesh_style(color))));
         }
     }
+}
+
+void draw_apriltag(const april_tag_t& tag, vx_buffer_t* buf)
+{
+    float yellow_color[] ={ 1.0f, 1.0f, 0.0f, 1.0f}; //yellow = id 2
+    float green_color[] ={ 0.0f, 1.0f, 0.0f, 1.0f}; //green = id 3
+    float red_color[] ={ 1.0f, 0.0f, 0.0f, 1.0f}; //red = id 5
+    
+    float color[] = { 0.5f, 0.5f, 1.0f, 1.0f}; //purple for other tags
+    if (tag.id == 2) {
+        vx_buffer_add_back(buf, vxo_chain(vxo_mat_translate3(tag.x, tag.y, 0.0),
+                                        vxo_mat_scale(0.05f),
+                                        vxo_circle(vxo_mesh_style(yellow_color))));
+    }
+    else if (tag.id == 3) {
+        vx_buffer_add_back(buf, vxo_chain(vxo_mat_translate3(tag.x, tag.y, 0.0),
+                                        vxo_mat_scale(0.05f),
+                                        vxo_circle(vxo_mesh_style(green_color))));
+    }
+    else if (tag.id == 5) {
+        vx_buffer_add_back(buf, vxo_chain(vxo_mat_translate3(tag.x, tag.y, 0.0),
+                                        vxo_mat_scale(0.05f),
+                                        vxo_circle(vxo_mesh_style(red_color))));
+    }
+    else{
+        vx_buffer_add_back(buf, vxo_chain(vxo_mat_translate3(tag.x, tag.y, 0.0),
+                                        vxo_mat_scale(0.05f),
+                                        vxo_circle(vxo_mesh_style(color))));
+    }
+    
+    // char id_label[16];
+    // sprintf(id_label, '%d', tag.id);
+    // vx_object_t * text = vxo_text_create(VXO_TEXT_ANCHOR_CENTER, id_label);
+    // vx_buffer_add_back(buf, vxo_chain(vxo_mat_translate3(tag.x, tag.y, 0.0),text));
 }

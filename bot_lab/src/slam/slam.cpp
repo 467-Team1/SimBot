@@ -52,6 +52,7 @@ OccupancyGridSLAM::OccupancyGridSLAM(int         numParticles,
     lcm_.subscribe(LIDAR_CHANNEL, &OccupancyGridSLAM::handleLaser, this);
     lcm_.subscribe(ODOMETRY_CHANNEL, &OccupancyGridSLAM::handleOdometry, this);
     lcm_.subscribe(TRUE_POSE_CHANNEL, &OccupancyGridSLAM::handleOptitrack, this);
+    lcm_.subscribe(APRIL_TAG, &OccupancyGridSLAM::handleAprilTagDistance, this);
     
     // If we are only building the occupancy grid using ground-truth poses, then subscribe to the ground-truth poses.
     if(mode_ == mapping_only)
@@ -66,6 +67,23 @@ OccupancyGridSLAM::OccupancyGridSLAM(int         numParticles,
     currentPose_.x  = currentPose_.y  = currentPose_.theta  = 0.0f;
 }
 
+void OccupancyGridSLAM::handleAprilTagDistance(const lcm::ReceiveBuffer* rbuf, const std::string& channel, const april_tag_data_t* distance)
+{
+    std::lock_guard<std::mutex> autoLock(dataMutex_);
+    
+    std::cout << "POSE ANGLE: " << (180*currentPose_.theta) / 3.1414 << std::endl;
+    std::cout << "RECEIVED ANGLE: " << distance->angle << std::endl;
+    float x = currentPose_.x + distance->dist * cosf((distance->angle)*-3.1415926/180 + currentPose_.theta); // + distance->angle);
+    float y = currentPose_.y + distance->dist * sinf((distance->angle)*-3.1415926/180 + currentPose_.theta); // + distance->angle);
+    std::cout << "X: " << x << std::endl;
+    std::cout << "Y: " << y << std::endl;
+    april_tag_t cur_tag;
+    cur_tag.x = x;
+    cur_tag.y = y;
+    cur_tag.id = distance->id;
+    lcm_.publish(BOTLAB_APRIL_CHANNEL, &cur_tag);
+
+}
 
 void OccupancyGridSLAM::runSLAM(void)
 {   

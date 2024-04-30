@@ -12,6 +12,8 @@
 #include <lcm/lcm-cpp.hpp>
 #include <deque>
 #include <mutex>
+#include <lcmtypes/april_tag_data_t.hpp>
+#include <lcmtypes/april_tag_t.hpp>
 
 /**
 * OccupancyGridSLAM runs on a thread and handles mapping.
@@ -60,6 +62,7 @@ public:
     void handleOdometry(const lcm::ReceiveBuffer* rbuf, const std::string& channel, const odometry_t* odometry);
     void handlePose    (const lcm::ReceiveBuffer* rbuf, const std::string& channel, const pose_xyt_t* pose);
     void handleOptitrack(const lcm::ReceiveBuffer* rbuf, const std::string& channel, const pose_xyt_t* pose);
+    void handleAprilTagDistance(const lcm::ReceiveBuffer* rbuf, const std::string& channel, const april_tag_data_t* distance);
 
 private:
     
