@@ -26,9 +26,7 @@
   ```
 
 ## Demo of Final Project
-<video width="320" height="240" controls>
-  <source src="demo/demo.mp4" type="video/mp4">
-</video>
+<iframe width="560" height="315" src="https://youtu.be/FMWMjoAIFdI" frameborder="0" allowfullscreen></iframe>
 
 ## April Tag Recognition
 
