@@ -172,7 +172,7 @@ source setenv.sh
 cd bin/
 ```
 
-- Run the following command: [Useful Commands](https://github.com/467-Team1/SimBot/edit/main/README.md#useful-commands) if using ssh connection
+- Run the following command: [Useful Commands](https://github.com/467-Team1/SimBot?tab=readme-ov-file#useful-commands) if using ssh connection
 ```bash
 ./botgui
 ```
