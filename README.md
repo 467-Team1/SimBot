@@ -172,7 +172,7 @@ source setenv.sh
 cd bin/
 ```
 
-- Run the following command: [Link to "To allow UI's to show up on VNC Viewer"](#vnc-ui)
+- Run the following command: [Useful Commands](https://github.com/467-Team1/SimBot/edit/main/README.md#useful-commands) if using ssh connection
 ```bash
 ./botgui
 ```
@@ -188,7 +188,7 @@ cd bin/
   - receive_stream.py; line 31
 
 ## Useful Commands
-### To allow UI's to show up on VNC Viewer {#vnc-ui}
+### To allow UI's to show up on VNC Viewer
 ```bash
 ssh -X pi@[insert Mbot IP Address here]
 ```
