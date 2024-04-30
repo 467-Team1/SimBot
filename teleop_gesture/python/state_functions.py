@@ -60,7 +60,7 @@ def angle_alignment(cur_motor_command):
     angle = 0.0
     distance = 0.0
     
-    time.sleep(0.2)
+    time.sleep(1.0)
 
     # Pull for the first time
     with open('data.txt','r') as file:
@@ -78,9 +78,9 @@ def angle_alignment(cur_motor_command):
 
     ## WORKING CODE ##
     if angle < -0.1: ### TODO: TUNE ME ###
-        cur_motor_command.angular_v = 1.0 ### TODO: TUNE ME ###
+        cur_motor_command.angular_v = 0.2 ### TODO: TUNE ME ###
     elif angle > 0.1: ### TODO: TUNE ME ###
-        cur_motor_command.angular_v = -1.0 ### TODO: TUNE ME ###
+        cur_motor_command.angular_v = -0.2 ### TODO: TUNE ME ###
 
     ### CONTROLLER WORK IN PROGRESS ###
 

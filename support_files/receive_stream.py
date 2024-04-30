@@ -7,6 +7,7 @@ from threading import Lock
 import socket
 
 # Create the Flask app
+
 app2 = Flask(__name__)
 
 # Create an AprilTag detector
@@ -19,6 +20,7 @@ tags_lock = Lock()
 # Detected tags and tracking tag
 detected_tags = []
 tracking_tag = None
+# double_tracking_tag = None
 
 # Camera parameters - Raspberry Pi Cam V2
 focal_length_x = 547.7837  
@@ -26,10 +28,36 @@ focal_length_y = 547.8070
 principal_point_x = 303.9048  
 principal_point_y = 243.7748
 
+glob_url = "192.168.1.3" ### TODO: UPDATE WITH MBOT IP ###
+
 tag_height_meters = 0.065 # TODO: make sure to change for specific april tag 
+
+@app2.route('/april_tag_double_click', methods=['POST'])
+def april_tag_double_click():
+    global tracking_tag
+    # global double_tracking_tag
+    with tags_lock:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid data'}), 400
+
+        x, y = data.get('x'), data.get('y')
+
+        # Find the tag that encapsulates the x, y coordinates.
+        for tag in detected_tags:
+            if x >= tag['xMin'] and x <= tag['xMax'] and y >= tag['yMin'] and y <= tag['yMax']:
+                # send_double_click_data(tag)  # Call the function to send the data
+                # double_tracking_tag = tag
+                distance, angle = get_distance_and_angle(tag['pose'])
+                send_double_click_data(angle, distance, tag['id'])
+                return jsonify({'message': 'Double-click on AprilTag detected and data sent.'})
+        
+        return jsonify({'message': 'Double-clicked outside all tags'})
+
 @app2.route('/april_tag_click', methods=['POST'])
 def april_tag_click():
     global tracking_tag
+    # global double_tracking_tag
     with tags_lock:
         data = request.get_json()
         if not data:
@@ -54,7 +82,7 @@ def video():
     return Response(get_frames(), mimetype='multipart/x-mixed-replace;boundary=frame')
 
 def get_frames():
-    url = 'http://192.168.1.3:5000/video_feed' ### TODO: UPDATE WITH MBOT IP ###
+    url = f'http://{glob_url}:5000/video_feed'
     response = requests.get(url, stream=True)
 
     frame_buffer = b''
@@ -78,6 +106,7 @@ def get_frames():
 def process_frame(frame):
     global detected_tags  
     global tracking_tag  
+    # global double_tracking_tag
 
     nparr = np.frombuffer(frame, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -94,7 +123,7 @@ def process_frame(frame):
                                             annotation=True
                                               )
 
-    with tags_lock:
+    with tags_lock:    
         if tracking_tag is None:
             detected_tags.clear()
             i = 0
@@ -125,38 +154,71 @@ def process_frame(frame):
                 detected_tags.append(tag)
                 i+=4
         else:
-            # Handle tracking mode
-            i = 0
-            cur_tag_detected = False 
-            while (i < len(results)):
-                corners = np.array(results[i].corners, dtype=np.int32)
-                if tracking_tag['id'] == results[i].tag_id:  # Assuming each tag has a unique 'id'
-                    cur_tag_detected = True
-                    cv2.polylines(image, [corners], True, (0, 0, 255), 2)
-                    # distance = calculate_distance(corners)
-                    distance, angle = get_distance_and_angle(results[i + 1])
-                    tracking_tag['corners'] = corners
-                    send_tag_data_to_remote_two(angle, distance, results[i + 1])
-                    if distance < 0.1:
-                        # tag_meet_distance = True
-                        send_message('DISTANCE MET')
-                    # Send head-on data
-                    if is_tag_head_on(angle):
-                        # tag_is_head_on = True
-                        send_message('HEAD ON MET')
-                    if distance < 0.2 and is_tag_head_on(angle): ### TODO: TUNE ME ###
-                        tracking_tag = None  # Stop tracking
-                        print("DONE TRACKING TAG")
-                        send_tag_done_to_remote()
+            if tracking_tag is not None:
+                print("============ IN SINGLE TRACKING TAG =========== ")
+                # Handle tracking mode
+                i = 0
+                cur_tag_detected = False 
+                while (i < len(results)):
+                    
+                    corners = np.array(results[i].corners, dtype=np.int32)
+                    if tracking_tag['id'] == results[i].tag_id:  # Assuming each tag has a unique 'id'
+                        cur_tag_detected = True
+                        cv2.polylines(image, [corners], True, (0, 0, 255), 2)
+                        # distance = calculate_distance(corners)
+                        distance, angle = get_distance_and_angle(results[i + 1])
+                        tracking_tag['corners'] = corners
+                        send_tag_data_to_remote_two(angle, distance, results[i + 1])
+                        if distance < 0.1:
+                            # tag_meet_distance = True
+                            send_message('DISTANCE MET')
+                        # Send head-on data
+                        if is_tag_head_on(angle):
+                            # tag_is_head_on = True
+                            send_message('HEAD ON MET')
+                        if distance < 0.1 and is_tag_head_on(angle): ### TODO: TUNE ME ###
+                            tracking_tag = None
+                            # double_tracking_tag = None
+                            print("DONE TRACKING TAG")
+                            send_tag_done_to_remote(distance)
 
-                    else:
-                        send_tag_data_to_remote(tracking_tag, distance, angle)
-                    break
-            
-            # If the tag is not detected, send a message
-            if (not cur_tag_detected):
-                send_message("Out of Sight")
+                        else:
+                            send_tag_data_to_remote(tracking_tag, distance, angle)
+                        break
+                
+                # If the tag is not detected, send a message
+                if (cur_tag_detected == False):
+                    send_message("Out of Sight")
+                    tracking_tag = None
+            # else:
+            #     # double tracking tag 
+            #     print("============ IN DOUBLE TRACKING TAG =========== ")
+            #     i = 0
+            #     cur_tag_detected = False 
+            #     while (i < len(results)):
+            #         corners = np.array(results[i].corners, dtype=np.int32)
+            #         if double_tracking_tag['id'] == results[i].tag_id:  # Assuming each tag has a unique 'id'
+            #             cur_tag_detected = True
+            #             cv2.polylines(image, [corners], True, (255, 0, 0), 2)
+            #             # distance = calculate_distance(corners)
+            #             distance, angle = get_distance_and_angle(results[i + 1])
+            #             double_tracking_tag['corners'] = corners
+            #             send_double_click_data(angle, distance, results[i].tag_id)
+                        
+            #             if is_tag_head_on(angle): ### TODO: TUNE ME ###
+            #                 send_tag_done_to_remote_double(distance, double_tracking_tag['id'])
+            #                 tracking_tag = None
+            #                 double_tracking_tag = None  # Stop tracking
+            #                 print("DONE ALIGNING TAG")
+                            
 
+            #             # else:
+            #             #     send_double_click_data(double_tracking_tag)
+            #             break
+            #     # If the tag is not detected, send a message
+            #     if (not cur_tag_detected):
+            #         send_message("Out of Sight")
+                
     _, buffer = cv2.imencode('.jpg', image)
     return buffer.tobytes()
 
@@ -173,9 +235,8 @@ def send_tag_data_to_remote_two(angle, distance, pose):
     data = {
         'angle': angle,
         'distance': distance,
-        'headon': head_on,
     }
-    remote_url = 'http://192.168.1.3:5003' ### TODO: UPDATE WITH MBOT IP ###
+    remote_url = f'http://{glob_url}:5003'
     try:
         # Send the data to the remote server
         requests.post(remote_url, json=data)
@@ -222,7 +283,7 @@ def send_message(message):
     data = {
         'status': message
     }
-    remote_url = 'http://192.168.1.3:5003' ### TODO: UPDATE WITH MBOT IP ###
+    remote_url = f'http://{glob_url}:5003'
     try:
         requests.post(remote_url, json=data)
     except requests.RequestException as e:
@@ -241,27 +302,58 @@ def send_tag_data_to_remote(tag, distance, angle):
     data = {
         'angle': angle,
         'distance': distance,
-        'headon': head_on,
     }
-    remote_url = 'http://192.168.1.3:5003' ### TODO: UPDATE WITH MBOT IP ###
+    remote_url = f'http://{glob_url}:5003'
 
     try:
         requests.post(remote_url, json=data)
     except requests.RequestException as e:
         print(f"Error sending tag data to remote: {e}")
 
-def send_tag_done_to_remote():
+def send_tag_done_to_remote(distance):
     print("sending info...")
     data = {
-        'status': 'DONE'
+        'status': 'DONE',
+        'distance': distance
     }
-    remote_url = 'http://192.168.1.3:5003' ### TODO: UPDATE WITH MBOT IP ###
+    remote_url = f'http://{glob_url}:5003'
     try:
         requests.post(remote_url, json=data)
     except requests.RequestException as e:
         print(f"Error sending done message to remote: {e}")
 
+def send_tag_done_to_remote_double(distance, id):
+    print("sending info double...")
+    data = {
+        'status': 'DONE DOUBLE',
+        'distance': distance,
+        'id': id
+    }
+    remote_url = f'http://{glob_url}:5003'
+    try:
+        requests.post(remote_url, json=data)
+    except requests.RequestException as e:
+        print(f"Error sending done message to remote: {e}")
+
+
+def send_double_click_data(angle, distance, tag_id):
+    remote_url = f'http://{glob_url}:5003'
+    # distance, angle = get_distance_and_angle(tag['pose'])  # Assumes pose contains the pose matrix
+    
+    data = {
+        'distance': distance,
+        'id': tag_id,
+        'angle': angle,
+        'log': 'Log',
+    }
+    
+    try:
+        # Send the data to the remote server once
+        requests.post(remote_url, json=data)
+    except requests.RequestException as e:
+        print(f"Error sending double-click data to remote: {e}")
+
 if __name__ == '__main__':
     hostname = socket.gethostname()
     IP = socket.gethostbyname(hostname)
-    app2.run(host=IP, port=5001, threaded=True)
+    app2.run(host=IP, port=5005, threaded=True)
