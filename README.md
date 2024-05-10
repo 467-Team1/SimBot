@@ -26,7 +26,7 @@
   ```
 
 ## Demo of Final Project
-[![Video Label](https://i9.ytimg.com/vi_webp/FMWMjoAIFdI/mq2.webp?sqp=CPSVxLEG-oaymwEmCMACELQB8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGGUgZShlMA8=&rs=AOn4CLBYV2IeZV7w74Xhw9VnS1PKz6EawQ)](https://youtu.be/FMWMjoAIFdI)
+[![Video Label](https://i9.ytimg.com/vi/FMWMjoAIFdI/mqdefault.jpg?sqp=CPyK9rEG-oaymwEmCMACELQB8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGGUgZShlMA8=&rs=AOn4CLAg0Uou4ia7CG7LZthDbWbH0zpmSQ)](https://youtu.be/FMWMjoAIFdI)
 
 ## April Tag Recognition
 
